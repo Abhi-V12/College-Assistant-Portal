@@ -1,0 +1,36 @@
+# Python virtual environment
+backend/venv/
+
+# Python
+
+**pycache**/
+*.py[cod]
+venv/
+.venv/
+
+# Environment variables and secrets
+
+.env
+.env.*
+!.env.example
+
+# Node.js
+
+node_modules/
+
+# Editor and operating system
+
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+
+*.log
+
+# SQLite databases
+
+*.db
+*.sqlite
+*.sqlite3
+

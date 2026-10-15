@@ -1,0 +1,3098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orbit — AI College Assistant Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#060c1a;
+    --navy-900:#0a1730;
+    --navy-850:#0d1c3a;
+    --navy-800:#122447;
+    --navy-700:#1a2f57;
+    --blue-600:#2f6fed;
+    --blue-500:#3b7dff;
+    --blue-400:#6ea1ff;
+    --blue-300:#9dc0ff;
+    --blue-100:#e8f0ff;
+    --ink:#0b1b36;
+    --slate:#5b6b8c;
+    --slate-300:#a9b7d1;
+    --white:#ffffff;
+    --good:#28c281;
+    --warn:#f5a524;
+    --bad:#f0506e;
+    --r-sm:10px;
+    --r-md:14px;
+    --r-lg:20px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--navy-950);
+    color:var(--ink);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Sora',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  ::selection{background:var(--blue-400);color:#fff;}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{
+    position:fixed;inset:0;
+    display:flex;
+    background:var(--navy-950);
+    z-index:10;
+  }
+  #loginCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:0.55;}
+  .login-left{
+    position:relative;
+    flex:1.15;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:6vw;
+    color:#fff;
+    overflow:hidden;
+  }
+  .login-left::after{
+    content:"";position:absolute;right:-10%;top:-20%;width:70%;height:140%;
+    background:radial-gradient(circle at center, rgba(59,125,255,0.25), transparent 65%);
+    pointer-events:none;
+  }
+  .brand-mark{
+    display:flex;align-items:center;gap:10px;margin-bottom:38px;position:relative;z-index:2;
+  }
+  .brand-orb{
+    width:34px;height:34px;border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, var(--blue-300), var(--blue-600) 60%, var(--navy-900) 100%);
+    box-shadow:0 0 22px rgba(59,125,255,0.65);
+    position:relative;
+    animation:pulseOrb 3.2s ease-in-out infinite;
+  }
+  @keyframes pulseOrb{
+    0%,100%{box-shadow:0 0 16px rgba(59,125,255,0.5);}
+    50%{box-shadow:0 0 30px rgba(110,161,255,0.85);}
+  }
+  .brand-name{font-weight:700;font-size:19px;letter-spacing:0.3px;}
+  .brand-sub{font-size:11px;color:var(--blue-300);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+  .login-hero-title{
+    font-size:clamp(30px,4.2vw,52px);
+    font-weight:700;line-height:1.08;
+    letter-spacing:-0.5px;
+    max-width:640px;position:relative;z-index:2;
+    margin:0 0 18px 0;
+  }
+  .login-hero-title em{
+    font-style:normal;
+    background:linear-gradient(90deg, var(--blue-300), var(--blue-500));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .login-hero-desc{
+    color:var(--slate-300);font-size:15px;max-width:480px;line-height:1.6;
+    position:relative;z-index:2;margin-bottom:34px;
+  }
+  .hero-stats{display:flex;gap:34px;position:relative;z-index:2;}
+  .hero-stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:22px;color:#fff;}
+  .hero-stat span{font-size:11px;color:var(--slate-300);text-transform:uppercase;letter-spacing:0.8px;}
+
+  .login-right{
+    width:min(420px,42vw);
+    background:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    padding:5vw 3vw;
+    position:relative;z-index:2;
+    box-shadow:-40px 0 80px rgba(0,0,0,0.35);
+  }
+  .login-card{width:100%;max-width:330px;}
+  .login-card h2{font-size:23px;margin:0 0 6px 0;color:var(--ink);}
+  .login-card p.sub{color:var(--slate);font-size:13px;margin:0 0 22px 0;}
+  .role-tabs{display:flex;background:var(--blue-100);border-radius:12px;padding:4px;gap:4px;margin-bottom:20px;}
+  .role-tab{
+    flex:1;border:none;background:transparent;padding:9px 4px;border-radius:9px;
+    font-size:12.5px;font-weight:600;color:var(--slate);transition:all .2s ease;
+  }
+  .role-tab.active{background:var(--navy-900);color:#fff;box-shadow:0 4px 10px rgba(10,23,48,0.25);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11.5px;font-weight:600;color:var(--slate);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;}
+  .field input, .field select{
+    width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid #e3e9f5;
+    font-size:14px;outline:none;transition:border .15s ease, box-shadow .15s ease;background:#fbfcff;color:var(--ink);
+  }
+  .field input:focus, .field select:focus{border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(59,125,255,0.15);}
+  .login-btn{
+    width:100%;padding:12px;border:none;border-radius:10px;background:var(--blue-600);
+    color:#fff;font-weight:700;font-size:14.5px;margin-top:4px;
+    transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+    box-shadow:0 8px 20px rgba(47,111,237,0.35);
+  }
+  .login-btn:hover{background:var(--blue-500);transform:translateY(-1px);}
+  .login-btn:active{transform:translateY(0);}
+  .login-note{font-size:11.5px;color:var(--slate);text-align:center;margin-top:14px;}
+  .login-error{color:#d3273e;background:#fdeeef;border:1px solid #f6c6cc;padding:8px 11px;border-radius:8px;font-size:12px;font-weight:600;margin:-6px 0 12px 0;}
+  @keyframes shakeX{
+    10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
+    30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
+  }
+  .login-card.shake{animation:shakeX 0.4s;}
+  .demo-toggle{
+    display:block;width:100%;text-align:center;background:transparent;border:none;
+    color:var(--blue-600);font-size:11.5px;font-weight:700;margin-top:12px;padding:4px;
+  }
+  .demo-toggle:hover{text-decoration:underline;}
+  .demo-creds{margin-top:10px;background:#f4f7fc;border:1px solid #e3e9f5;border-radius:10px;padding:10px 12px;}
+  .demo-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .demo-table th{text-align:left;color:var(--slate);font-weight:700;padding:2px 6px 6px 6px;font-size:9.5px;text-transform:uppercase;letter-spacing:0.4px;}
+  .demo-table td{padding:3px 6px;color:var(--ink);}
+  .demo-table tr+tr td{border-top:1px dashed #e3e9f5;}
+
+  /* ---------- APP SHELL ---------- */
+  #appShell{display:none;height:100vh;width:100vw;overflow:hidden;background:var(--navy-950);}
+  #appShell.active{display:flex;}
+  .sidebar{
+    width:76px;background:var(--navy-900);display:flex;flex-direction:column;align-items:center;
+    padding:18px 0;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);
+  }
+  .sidebar .brand-orb{margin-bottom:26px;}
+  .side-nav{display:flex;flex-direction:column;gap:6px;flex:1;}
+  .side-btn{
+    width:46px;height:46px;border-radius:12px;border:none;background:transparent;
+    color:var(--slate-300);display:flex;align-items:center;justify-content:center;
+    transition:all .18s ease;position:relative;
+  }
+  .side-btn svg{width:20px;height:20px;}
+  .side-btn:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .side-btn.active{background:var(--blue-600);color:#fff;box-shadow:0 6px 16px rgba(47,111,237,0.4);}
+  .side-btn .tip{
+    position:absolute;left:58px;background:var(--navy-900);color:#fff;font-size:11px;padding:5px 9px;
+    border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s ease;
+    box-shadow:0 6px 16px rgba(0,0,0,0.4); font-weight:600; z-index:50;
+  }
+  .side-btn:hover .tip{opacity:1;}
+  .side-bottom{display:flex;flex-direction:column;gap:10px;align-items:center;}
+
+  .main-col{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;}
+  .topbar{
+    height:66px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 26px;background:var(--navy-900);border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .topbar-left h1{color:#fff;font-size:18px;margin:0;font-weight:700;}
+  .topbar-left .role-badge{
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;
+    color:var(--blue-300);background:rgba(59,125,255,0.15);padding:3px 9px;border-radius:20px;margin-left:10px;
+  }
+  .topbar-right{display:flex;align-items:center;gap:16px;}
+  .clock{color:var(--slate-300);font-size:12.5px;font-family:'JetBrains Mono',monospace;}
+  .avatar-chip{
+    display:flex;align-items:center;gap:9px;background:var(--navy-800);padding:6px 12px 6px 6px;
+    border-radius:30px;
+  }
+  .avatar-chip .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue-400),var(--blue-600));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;}
+  .avatar-chip span{color:#fff;font-size:12.5px;font-weight:600;}
+  .logout-btn{
+    background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--slate-300);
+    padding:7px 13px;border-radius:9px;font-size:12px;font-weight:600;transition:all .15s;
+  }
+  .logout-btn:hover{border-color:var(--bad);color:var(--bad);}
+
+  .content{
+    flex:1;padding:18px 22px;overflow:auto;
+    background:
+      radial-gradient(circle at 90% 0%, rgba(47,111,237,0.10), transparent 40%),
+      var(--navy-950);
+  }
+  @media (min-width:1024px){
+    .content.nogrow{overflow:hidden;}
+  }
+
+  /* card base */
+  .card{
+    background:var(--navy-900);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);
+    padding:16px;display:flex;flex-direction:column;min-height:0;
+  }
+  .card-light{background:#fff;color:var(--ink);}
+  .card h3.card-title{
+    font-size:12px;text-transform:uppercase;letter-spacing:0.7px;color:var(--slate-300);
+    margin:0 0 12px 0;font-weight:700;display:flex;align-items:center;justify-content:space-between;
+  }
+  .pill{padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:0.3px;}
+  .pill-good{background:rgba(40,194,129,0.15);color:var(--good);}
+  .pill-warn{background:rgba(245,165,36,0.15);color:var(--warn);}
+  .pill-bad{background:rgba(240,80,110,0.15);color:var(--bad);}
+  .pill-blue{background:rgba(59,125,255,0.15);color:var(--blue-300);}
+
+  /* ---------- STUDENT GRID ---------- */
+  .grid-student{
+    display:grid;
+    grid-template-columns:220px 1.1fr 1fr 260px;
+    grid-template-rows:auto 1fr 1fr;
+    gap:14px;
+    height:100%;
+  }
+  .g-profile{grid-column:1;grid-row:1 / span 2;}
+  .g-quick{grid-column:1;grid-row:3;}
+  .g-attendance{grid-column:2;grid-row:1;}
+  .g-marks{grid-column:2;grid-row:2 / span 2;}
+  .g-exams{grid-column:3;grid-row:1;}
+  .g-fees{grid-column:3;grid-row:2;}
+  .g-history{grid-column:3;grid-row:3;}
+  .g-announce{grid-column:4;grid-row:1 / span 3;}
+
+  .profile-photo{
+    width:64px;height:64px;border-radius:16px;margin:0 auto 10px auto;
+    background:linear-gradient(135deg,var(--blue-400),var(--blue-600));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;
+  }
+  .profile-name{color:#fff;text-align:center;font-weight:700;font-size:15px;margin-bottom:2px;}
+  .profile-meta{text-align:center;color:var(--slate-300);font-size:11.5px;line-height:1.6;}
+  .profile-divider{height:1px;background:rgba(255,255,255,0.08);margin:12px 0;}
+  .profile-info-row{display:flex;justify-content:space-between;font-size:11.5px;padding:4px 0;color:var(--slate-300);}
+  .profile-info-row b{color:#fff;font-weight:600;}
+
+  .quick-btn{
+    width:100%;display:flex;align-items:center;gap:9px;background:var(--navy-800);border:none;
+    color:#fff;padding:10px 11px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:8px;
+    transition:all .15s;
+  }
+  .quick-btn:hover{background:var(--blue-600);}
+  .quick-btn svg{width:16px;height:16px;flex-shrink:0;}
+
+  .gauge-wrap{display:flex;align-items:center;gap:18px;flex:1;}
+  .gauge{position:relative;width:88px;height:88px;flex-shrink:0;}
+  .gauge svg{transform:rotate(-90deg);}
+  .gauge-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-weight:700;color:#fff;font-size:18px;}
+  .subj-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .subj-bar-row .lbl{font-size:10.5px;color:var(--slate-300);width:42px;flex-shrink:0;}
+  .subj-bar-track{flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;}
+  .subj-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue-500),var(--blue-300));}
+  .subj-bar-pct{font-size:10.5px;color:var(--slate-300);width:30px;text-align:right;font-family:'JetBrains Mono',monospace;}
+
+  .marks-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .marks-table th{text-align:left;color:var(--slate-300);font-weight:600;font-size:10.5px;text-transform:uppercase;
+    padding:0 6px 8px 6px;letter-spacing:0.4px;}
+  .marks-table td{padding:7px 6px;color:#fff;border-top:1px solid rgba(255,255,255,0.06);}
+  .cgpa-chip{display:flex;align-items:center;justify-content:space-between;background:var(--navy-800);border-radius:10px;
+    padding:10px 14px;margin-top:10px;}
+  .cgpa-chip .num{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--blue-300);font-size:20px;}
+
+  .exam-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,0.08);}
+  .exam-row:last-child{border-bottom:none;}
+  .exam-row .nm{color:#fff;font-size:12px;font-weight:600;}
+  .exam-row .dt{color:var(--slate-300);font-size:10.5px;}
+
+  .fee-amt{font-family:'JetBrains Mono',monospace;color:#fff;font-size:24px;font-weight:700;}
+  .fee-sub{color:var(--slate-300);font-size:11px;margin-top:2px;}
+  .fee-bar-track{height:7px;background:rgba(255,255,255,0.08);border-radius:8px;margin:10px 0 6px 0;overflow:hidden;}
+  .fee-bar-fill{height:100%;background:linear-gradient(90deg,var(--good),#63e2a6);}
+
+  .hist-row{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.06);}
+  .hist-row:last-child{border-bottom:none;}
+  .hist-dot{width:6px;height:6px;border-radius:50%;background:var(--blue-400);margin-top:5px;flex-shrink:0;}
+  .hist-row p{margin:0;font-size:11.5px;color:var(--slate-300);line-height:1.4;}
+
+  .announce-item{padding:10px;border-radius:10px;background:var(--navy-800);margin-bottom:9px;}
+  .announce-item .tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--blue-300);}
+  .announce-item .ttl{color:#fff;font-size:12.5px;font-weight:600;margin:4px 0 3px 0;}
+  .announce-item .dt{color:var(--slate-300);font-size:10.5px;}
+
+  /* ---------- TEACHER GRID ---------- */
+  .grid-teacher{
+    display:grid;
+    grid-template-columns:220px 1fr 1fr 300px;
+    grid-template-rows:auto 1fr 1fr;
+    gap:14px;height:100%;
+  }
+  .t-profile{grid-column:1;grid-row:1 / span 2;}
+  .t-quick{grid-column:1;grid-row:3;}
+  .t-classes{grid-column:2;grid-row:1 / span 3;}
+  .t-attend{grid-column:3;grid-row:1;}
+  .t-marks{grid-column:3;grid-row:2 / span 2;}
+  .t-perf{grid-column:4;grid-row:1 / span 2;}
+  .t-announce{grid-column:4;grid-row:3;}
+
+  .class-row{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--navy-800);
+    border-radius:10px;margin-bottom:8px;}
+  .class-row .nm{color:#fff;font-size:12.5px;font-weight:700;}
+  .class-row .meta{color:var(--slate-300);font-size:10.5px;margin-top:2px;}
+  .class-row .cnt{font-family:'JetBrains Mono',monospace;color:var(--blue-300);font-size:14px;font-weight:700;}
+
+  .attend-donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;}
+  .today-stat{display:flex;justify-content:space-around;width:100%;margin-top:10px;}
+  .today-stat div{text-align:center;}
+  .today-stat b{display:block;font-family:'JetBrains Mono',monospace;color:#fff;font-size:16px;}
+  .today-stat span{font-size:9.5px;color:var(--slate-300);text-transform:uppercase;}
+
+  .upload-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,0.08);}
+  .upload-row:last-child{border-bottom:none;}
+  .upload-row .nm{color:#fff;font-size:11.5px;}
+  .upload-row .meta{color:var(--slate-300);font-size:10px;}
+
+  .perf-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .perf-bar-row .lbl{width:56px;font-size:10.5px;color:var(--slate-300);flex-shrink:0;}
+  .perf-bar-track{flex:1;height:10px;background:rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;}
+  .perf-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue-600),var(--blue-300));}
+  .perf-bar-pct{width:34px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#fff;}
+
+  /* ---------- ADMIN GRID ---------- */
+  .grid-admin{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows:auto 1fr 1fr;
+    gap:12px;height:100%;
+  }
+  .stat-tile{grid-row:1;background:var(--navy-900);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);
+    padding:13px 15px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
+  .stat-tile .num{font-family:'JetBrains Mono',monospace;font-weight:700;color:#fff;font-size:24px;}
+  .stat-tile .lbl{font-size:10.5px;color:var(--slate-300);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px;}
+  .stat-tile .icn{position:absolute;right:10px;top:10px;width:26px;height:26px;opacity:0.5;color:var(--blue-400);}
+  .stat-tile .delta{font-size:10px;font-weight:700;margin-top:6px;}
+
+  .a-actions{grid-column:1 / span 3;grid-row:2 / span 2;}
+  .a-usage{grid-column:4 / span 3;grid-row:2;}
+  .a-feedback{grid-column:4 / span 3;grid-row:3;}
+
+  .actions-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:10px;flex:1;}
+  .action-tile{
+    background:var(--navy-800);border:1px solid rgba(255,255,255,0.05);border-radius:12px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    color:var(--slate-300);transition:all .16s ease;text-align:center;padding:6px;
+  }
+  .action-tile:hover{background:var(--blue-600);color:#fff;transform:translateY(-2px);box-shadow:0 8px 18px rgba(47,111,237,0.35);}
+  .action-tile svg{width:19px;height:19px;}
+  .action-tile span{font-size:10.5px;font-weight:600;line-height:1.25;}
+
+  .usage-bars{display:flex;align-items:flex-end;gap:6px;height:78px;flex:1;padding-top:6px;}
+  .usage-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px;}
+  .usage-bar{width:100%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--blue-300),var(--blue-600));}
+  .usage-bar-col span{font-size:9px;color:var(--slate-300);}
+
+  .fb-row{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,0.07);}
+  .fb-row:last-child{border-bottom:none;}
+  .fb-stars{color:var(--warn);font-size:11px;letter-spacing:1px;flex-shrink:0;}
+  .fb-row p{margin:0;color:var(--slate-300);font-size:11.5px;line-height:1.4;}
+  .fb-row .who{color:#fff;font-weight:600;font-size:11.5px;}
+
+  /* ---------- CHATBOT ---------- */
+  #chatLauncher{
+    position:fixed;bottom:26px;right:26px;width:60px;height:60px;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, var(--blue-300), var(--blue-600) 65%, var(--navy-900) 100%);
+    border:none;box-shadow:0 10px 30px rgba(47,111,237,0.55);
+    display:flex;align-items:center;justify-content:center;z-index:100;
+    transition:transform .2s ease;
+  }
+  #chatLauncher:hover{transform:scale(1.06);}
+  #chatLauncher svg{width:26px;height:26px;color:#fff;}
+  #chatLauncher .ring{
+    position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(110,161,255,0.5);
+    animation:ringPulse 2.4s ease-out infinite;
+  }
+  @keyframes ringPulse{
+    0%{transform:scale(0.85);opacity:0.9;}
+    100%{transform:scale(1.35);opacity:0;}
+  }
+
+  #chatPanel{
+    position:fixed;bottom:100px;right:26px;width:680px;height:520px;max-width:90vw;max-height:78vh;
+    background:var(--navy-900);border-radius:20px;border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 30px 70px rgba(0,0,0,0.55);
+    display:flex;flex-direction:column;z-index:100;overflow:hidden;
+    transform:translateY(16px) scale(0.97);opacity:0;pointer-events:none;
+    transition:all .22s cubic-bezier(.2,.8,.3,1);
+  }
+  #chatPanel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all;}
+  .chat-head{
+    padding:14px 16px;display:flex;align-items:center;gap:10px;
+    background:linear-gradient(120deg,var(--navy-850),var(--navy-800));
+    border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
+  }
+  .chat-head .orb-sm{width:32px;height:32px;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, var(--blue-300), var(--blue-600) 65%);flex-shrink:0;}
+  .chat-head h4{margin:0;color:#fff;font-size:13.5px;font-weight:700;}
+  .chat-head p{margin:1px 0 0 0;font-size:10.5px;color:var(--good);display:flex;align-items:center;gap:5px;}
+  .chat-head p::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--good);}
+  .chat-close{margin-left:auto;background:transparent;border:none;color:var(--slate-300);width:26px;height:26px;border-radius:8px;}
+  .chat-close:hover{background:rgba(255,255,255,0.08);color:#fff;}
+
+  .chat-body{flex:1;overflow-y:auto;padding:14px 14px 6px 14px;display:flex;flex-direction:column;gap:10px;}
+  .msg{max-width:84%;padding:10px 12px;border-radius:14px;font-size:12.8px;line-height:1.5;animation:msgIn .2s ease;}
+  @keyframes msgIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .msg-bot{background:var(--navy-800);color:#e8edf7;align-self:flex-start;border-bottom-left-radius:4px;}
+  .msg-user{background:var(--blue-600);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+  .msg-meta{font-size:9.5px;color:var(--slate-300);margin-top:4px;display:flex;gap:6px;align-items:center;}
+  .match-score{background:rgba(59,125,255,0.18);color:var(--blue-300);padding:1px 6px;border-radius:8px;font-family:'JetBrains Mono',monospace;}
+  .fb-btns{display:flex;gap:6px;margin-top:6px;}
+  .fb-btns button{background:rgba(255,255,255,0.06);border:none;color:var(--slate-300);width:22px;height:22px;border-radius:6px;font-size:11px;transition:all .15s;}
+  .fb-btns button:hover{background:var(--blue-600);color:#fff;}
+  .suggest-row{display:flex;flex-wrap:wrap;gap:6px;padding:2px 14px 12px 14px;flex-shrink:0;}
+  .suggest-chip{background:var(--navy-800);border:1px solid rgba(255,255,255,0.08);color:var(--blue-300);
+    font-size:10.5px;padding:5px 10px;border-radius:20px;transition:all .15s;}
+  .suggest-chip:hover{background:var(--blue-600);color:#fff;}
+  .chat-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+  .chat-input-row input{
+    flex:1;background:var(--navy-800);border:1.5px solid rgba(255,255,255,0.08);border-radius:12px;
+    padding:10px 13px;color:#fff;font-size:12.8px;outline:none;transition:border .15s;
+  }
+  .chat-input-row input:focus{border-color:var(--blue-500);}
+  .chat-send{background:var(--blue-600);border:none;width:38px;height:38px;border-radius:11px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .chat-send:hover{background:var(--blue-500);}
+  .chat-send svg{width:16px;height:16px;color:#fff;}
+  .typing-dots{display:flex;gap:4px;padding:4px 2px;}
+  .typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--blue-300);animation:typingBounce 1.1s infinite;}
+  .typing-dots span:nth-child(2){animation-delay:.15s;}
+  .typing-dots span:nth-child(3){animation-delay:.3s;}
+  @keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:0.5;}30%{transform:translateY(-4px);opacity:1;}}
+
+  .fade-in{animation:fadeIn .35s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- DETAIL PAGE COMPONENTS ---------- */
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .page-head h2{color:#fff;font-size:20px;margin:0 0 4px 0;}
+  .page-head p{color:var(--slate-300);font-size:12.5px;margin:0;max-width:520px;}
+
+  .cards-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+  .cards-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start;}
+  @media (max-width:900px){.cards-grid-2,.cards-grid-3{grid-template-columns:1fr;}}
+
+  .btn-primary{background:var(--blue-600);color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:700;font-size:12.5px;transition:all .15s;}
+  .btn-primary:hover{background:var(--blue-500);transform:translateY(-1px);}
+  .btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,0.15);color:var(--slate-300);padding:9px 15px;border-radius:10px;font-weight:600;font-size:12.5px;transition:all .15s;}
+  .btn-ghost:hover{border-color:var(--blue-400);color:#fff;}
+  .btn-ghost-sm{background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--blue-300);padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;flex-shrink:0;}
+  .btn-ghost-sm:hover{background:var(--blue-600);color:#fff;border-color:var(--blue-600);}
+  .btn-danger-sm{background:transparent;border:1px solid rgba(240,80,110,0.35);color:var(--bad);padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;flex-shrink:0;}
+  .btn-danger-sm:hover{background:var(--bad);color:#fff;}
+
+  .select-input{background:var(--navy-800);border:1.5px solid rgba(255,255,255,0.1);color:#fff;padding:9px 12px;border-radius:10px;font-size:12.5px;outline:none;}
+  .select-input:focus{border-color:var(--blue-500);}
+
+  .data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .data-table th{text-align:left;color:var(--slate-300);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:0.4px;padding:0 10px 10px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .data-table td{padding:9px 10px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .data-table tr:last-child td{border-bottom:none;}
+
+  .roster-list{max-height:420px;overflow-y:auto;}
+  .roster-item{display:grid;grid-template-columns:60px 1fr 50px 80px;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed rgba(255,255,255,0.06);}
+  .roster-item:last-child{border-bottom:none;}
+  .roster-roll{color:var(--slate-300);font-size:11px;}
+  .roster-name{color:#fff;font-size:12.5px;}
+  .roster-status{font-size:11px;font-weight:600;text-align:right;}
+  .toggle-switch{width:40px;height:22px;border-radius:20px;background:rgba(255,255,255,0.12);border:none;position:relative;transition:background .2s;flex-shrink:0;}
+  .toggle-switch.on{background:var(--good);}
+  .toggle-switch .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;}
+  .toggle-switch.on .knob{transform:translateX(18px);}
+
+  .marks-input{width:64px;background:var(--navy-800);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;padding:6px 8px;font-size:12px;outline:none;}
+  .marks-input:focus{border-color:var(--blue-500);}
+
+  .kv-list{margin-top:4px;}
+  .kv-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--slate-300);padding:5px 0;border-bottom:1px dashed rgba(255,255,255,0.06);}
+  .kv-row:last-child{border-bottom:none;}
+  .kv-row b{color:#fff;font-weight:600;}
+
+  .filter-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .filter-tab{background:var(--navy-900);border:1px solid rgba(255,255,255,0.08);color:var(--slate-300);padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:600;transition:all .15s;}
+  .filter-tab.active{background:var(--blue-600);color:#fff;border-color:var(--blue-600);}
+  .filter-tab:hover{color:#fff;}
+
+  .faq-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 4px;border-bottom:1px dashed rgba(255,255,255,0.07);}
+  .faq-row:last-child{border-bottom:none;}
+  .faq-q{color:#fff;font-size:12.5px;font-weight:600;margin:0 0 4px 0;text-transform:capitalize;}
+  .faq-a{color:var(--slate-300);font-size:11.5px;margin:0;line-height:1.5;max-width:560px;}
+
+  .dropzone{border:2px dashed rgba(255,255,255,0.15);border-radius:14px;padding:34px 20px;text-align:center;color:var(--slate-300);cursor:pointer;transition:all .15s;}
+  .dropzone:hover{border-color:var(--blue-400);color:#fff;background:rgba(59,125,255,0.05);}
+  .dropzone svg{width:30px;height:30px;color:var(--blue-400);margin-bottom:8px;}
+  .dropzone p{margin:0 0 4px 0;font-size:12.5px;}
+
+  .form-grid{display:flex;flex-direction:column;gap:12px;}
+
+  /* modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(6,12,26,0.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;transition:opacity .2s ease;}
+  .modal-overlay.open{opacity:1;}
+  .modal-box{background:var(--navy-900);border:1px solid rgba(255,255,255,0.1);border-radius:18px;width:min(440px,90vw);max-height:82vh;overflow:auto;box-shadow:0 30px 70px rgba(0,0,0,0.5);transform:translateY(10px) scale(0.97);transition:transform .2s ease;}
+  .modal-overlay.open .modal-box{transform:translateY(0) scale(1);}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .modal-head h3{color:#fff;margin:0;font-size:15px;}
+  .modal-head button{background:transparent;border:none;color:var(--slate-300);width:26px;height:26px;border-radius:8px;font-size:13px;}
+  .modal-head button:hover{background:rgba(255,255,255,0.08);color:#fff;}
+  .modal-body{padding:18px;}
+  .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.07);}
+
+  /* toast */
+  #toastRoot{position:fixed;bottom:26px;left:26px;z-index:300;display:flex;flex-direction:column-reverse;gap:8px;}
+  .toast{background:var(--navy-900);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:12px 16px;border-radius:12px;font-size:12.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,0.4);transform:translateY(10px);opacity:0;transition:all .3s ease;max-width:320px;border-left:3px solid var(--good);}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.toast-warn{border-left-color:var(--warn);}
+
+  @media (max-width:1180px){
+    .content{overflow:auto !important;}
+    .grid-student,.grid-teacher{grid-template-columns:1fr 1fr;grid-template-rows:auto;height:auto;}
+    .g-profile,.t-profile{grid-column:1;grid-row:1;}
+    .g-quick,.t-quick{grid-column:2;grid-row:1;}
+    .g-attendance,.t-attend{grid-column:1;grid-row:2;}
+    .g-marks,.t-marks{grid-column:2;grid-row:2;}
+    .g-exams{grid-column:1;grid-row:3;}
+    .g-fees{grid-column:2;grid-row:3;}
+    .g-history{grid-column:1;grid-row:4;}
+    .g-announce{grid-column:2;grid-row:4;}
+    .t-classes{grid-column:1 / span 2;grid-row:3;}
+    .t-perf{grid-column:1;grid-row:4;}
+    .t-announce{grid-column:2;grid-row:4;}
+    .grid-admin{grid-template-columns:repeat(3,1fr);grid-template-rows:auto;height:auto;}
+    .a-actions{grid-column:1 / span 3;grid-row:3;}
+    .a-usage{grid-column:1 / span 3;grid-row:4;}
+    .a-feedback{grid-column:1 / span 3;grid-row:5;}
+    .card{min-height:180px;}
+    #chatPanel{width:92vw;right:4vw;}
+  }
+  @media (max-width:720px){
+    .sidebar{width:58px;}
+    .grid-student,.grid-teacher,.grid-admin{grid-template-columns:1fr;}
+    .g-profile,.g-quick,.g-attendance,.g-marks,.g-exams,.g-fees,.g-history,.g-announce,
+    .t-profile,.t-quick,.t-classes,.t-attend,.t-marks,.t-perf,.t-announce,
+    .a-actions,.a-usage,.a-feedback{grid-column:1;}
+    .actions-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);}
+    .login-right{width:100%;}
+    .login-left{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <canvas id="loginCanvas"></canvas>
+  <div class="login-left">
+    <div class="brand-mark">
+      <div class="brand-orb"></div>
+      <div>
+        <div class="brand-name" id="brandNameText">Orbit</div>
+        <div class="brand-sub">College Assistant Portal</div>
+      </div>
+    </div>
+    <h1 class="login-hero-title">Every answer your campus needs, <em>understood</em> — not just matched.</h1>
+    <p class="login-hero-desc" id="loginHeroDesc">Orbit reads the meaning behind a question, not just its keywords — pulling attendance, marks, fees and FAQs into one calm, role-aware dashboard for students, teachers and administrators.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>1,240+</b><span>FAQs indexed</span></div>
+      <div class="hero-stat"><b>&lt;2s</b><span>Avg. response</span></div>
+      <div class="hero-stat"><b>3</b><span>Role dashboards</span></div>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-card">
+      <h2 id="signInHeading">Sign in to Orbit</h2>
+      <p class="sub">Choose your role to continue</p>
+      <div class="role-tabs">
+        <button class="role-tab active" data-role="student" onclick="selectRole('student')">Student</button>
+        <button class="role-tab" data-role="teacher" onclick="selectRole('teacher')">Teacher</button>
+        <button class="role-tab" data-role="admin" onclick="selectRole('admin')">Admin</button>
+      </div>
+      <div class="field">
+        <label>Email or ID</label>
+        <input id="loginId" type="text" placeholder="e.g. aria.nair@orbit.edu" value="aria.nair@orbit.edu"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPw" type="password" placeholder="Enter your password" value="" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <p id="loginError" class="login-error" style="display:none;"></p>
+      <button class="login-btn" onclick="doLogin()">Sign in securely</button>
+      <button type="button" id="demoToggleBtn" class="demo-toggle" onclick="toggleDemoCreds()">View demo login credentials ▾</button>
+      <button type="button" class="demo-toggle" onclick="openAdminSignup()">Sign up as Admin</button>
+      <div id="demoCredsPanel" class="demo-creds" style="display:none;"></div>
+      <p class="login-note">Prototype build — credentials are checked against the accounts in Admin → Manage Users.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="appShell">
+  <div class="sidebar">
+    <div class="brand-orb"></div>
+    <div class="side-nav" id="sideNav"></div>
+    <div class="side-bottom">
+      <button class="side-btn" onclick="openChat()"><span class="tip" id="askOrbitTip">Ask Orbit AI</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-col">
+    <div class="topbar">
+      <div class="topbar-left" style="display:flex;align-items:center;">
+        <h1 id="pageTitle">Dashboard</h1>
+        <span class="role-badge" id="roleBadge">STUDENT</span>
+      </div>
+      <div class="topbar-right">
+        <span class="clock" id="clockEl"></span>
+        <div class="avatar-chip">
+          <div class="av" id="avatarInit">AN</div>
+          <span id="userNameTop">Aria Nair</span>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Log out</button>
+      </div>
+    </div>
+    <div class="content" id="contentArea"></div>
+  </div>
+</div>
+
+<!-- ================= CHATBOT ================= -->
+<button id="chatLauncher" onclick="toggleChat()">
+  <span class="ring"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+
+<div id="chatPanel">
+  <div class="chat-head">
+    <div class="orb-sm"></div>
+    <div>
+      <h4 id="chatHeaderName">Orbit AI</h4>
+      <p>Semantic search online</p>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="suggest-row" id="suggestRow"></div>
+  <div class="chat-input-row">
+    <button class="chat-send" id="chatUploadBtn" style="background:var(--navy-800);" onclick="document.getElementById('chatImageInput').click()" title="Upload attendance/marks sheet photo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    </button>
+    <input type="file" id="chatImageInput" accept="image/*" style="display:none;" onchange="handleChatImageUpload(this)">
+    <input id="chatInput" type="text" placeholder="Ask about fees, exams, hostel…" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="chat-send" onclick="sendChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="toastRoot"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* =========================================================
+   ORBIT — AI College Assistant Portal (frontend prototype)
+   All data below is mock/in-memory, simulating what a
+   FastAPI + JWT + Sentence-Transformers/FAISS backend would
+   return in the production system described in the PRD.
+========================================================= */
+
+/* ---------------- COLLEGE BRANDING ----------------
+   Single source of truth. To rename the college, change these three lines
+   (and the matching constant in orbit-backend/app/config.py) — every
+   greeting, page title, placeholder, and demo-credential hint below reads
+   from here instead of "Orbit" being hardcoded in dozens of places.
+   NOTE: COLLEGE_EMAIL_DOMAIN only affects *new* accounts going forward —
+   it does not retroactively rename existing usernames already saved in
+   orbit.db. See the chat response for how to handle that. */
+const COLLEGE_NAME = 'Orbit College';
+const COLLEGE_SHORT = 'Orbit';
+const COLLEGE_EMAIL_DOMAIN = 'orbit.edu';
+
+const PROGRAMS = {
+    'B.Tech': {
+        years: 4,
+        branches: [
+            'Computer Science and Engineering (CSE)',
+            'Artificial Intelligence and Machine Learning (AIML)',
+            'Data Science (DS)',
+            'Information Technology (IT)',
+            'Electronics and Communication Engineering - VLSI (ECE-VLSI)',
+            'Mechanical Engineering (ME)',
+            'Civil Engineering (CE)',
+            'Electronics and Communication Engineering (ECE)'
+        ]
+    },
+    'M.Tech': {
+        years: 2,
+        branches: [
+            'Computer Science and Engineering (CSE)',
+            'Electronics and Communication Engineering - VLSI (ECE-VLSI)',
+            'Electronics and Communication Engineering (ECE)'
+        ]
+    }
+};
+
+function applyBranding(){
+  document.title = `${COLLEGE_SHORT} — AI College Assistant Portal`;
+  const setText = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  setText('brandNameText', COLLEGE_SHORT);
+  setText('loginHeroDesc', `${COLLEGE_SHORT} reads the meaning behind a question, not just its keywords — pulling attendance, marks, fees and FAQs into one calm, role-aware dashboard for students, teachers and administrators.`);
+  setText('signInHeading', `Sign in to ${COLLEGE_SHORT}`);
+  setText('askOrbitTip', `Ask ${COLLEGE_SHORT} AI`);
+  setText('chatHeaderName', `${COLLEGE_SHORT} AI`);
+  const loginIdInput = document.getElementById('loginId');
+  if(loginIdInput){
+    loginIdInput.placeholder = `e.g. aria.nair@${COLLEGE_EMAIL_DOMAIN}`;
+    loginIdInput.value = `aria.nair@${COLLEGE_EMAIL_DOMAIN}`;
+  }
+}
+
+let currentRole = 'student';
+let chatOpen = false;
+let currentPage = { student:'dashboard', teacher:'dashboard', admin:'dashboard' };
+let activeUserTab = 'student';
+
+/* ---------------- ICONS ---------------- */
+const ICONS = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  attendance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="m8 14 2.5 2.5L16 11"/></svg>',
+  marks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  exams: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  fees: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+  announce: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v3a1 1 0 0 0 1 1h2l3.5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 8a5 5 0 0 1 0 8M18 5a9 9 0 0 1 0 14"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  dept: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h1m4 0h1"/></svg>',
+  faq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>',
+  import: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>',
+  reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>',
+  feedback: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>',
+  reports: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13h6M9 17h6"/></svg>',
+  logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
+  classes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+  perf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>',
+};
+
+/* ---------------- NAV + TITLES PER ROLE ---------------- */
+const NAV = {
+  student: [['dashboard','Dashboard'],['attendance','Attendance'],['marks','Marks & Exams'],['fees','Fees'],['announce','Announcements']],
+  teacher: [['dashboard','Dashboard'],['classes','My Classes'],['attendance','Attendance'],['marks','Marks Upload'],['perf','Performance']],
+  admin:   [['dashboard','Dashboard'],['users','Users'],['dept','Departments'],['faq','FAQ Manager'],['reports','Reports']],
+};
+const TITLES = {
+  student:{dashboard:'Dashboard', attendance:'Attendance', marks:'Marks & Exams', fees:'Fees', announce:'Announcements'},
+  teacher:{dashboard:'Dashboard', classes:'My Classes', attendance:'Mark Attendance', marks:'Upload Marks', perf:'Performance'},
+  admin:{dashboard:'Dashboard', users:'Manage Users', dept:'Departments & Courses', faq:'FAQ Manager', import:'Import FAQ Dataset',
+    reports:'Reports', attendance:'Manage Attendance', marks:'Manage Marks', announce:'Publish Announcement',
+    reset:'Reset Passwords', stats:'Chatbot Usage Stats', feedback:'Review Feedback'},
+};
+
+const USERS = {
+  student: {name:'Aria Nair', init:'AN', roll:'CS21B045', dept:'Computer Science', sem:'6th Semester', advisor:'Dr. Rekha Menon', dob:'14 Mar 2004'},
+  teacher: {name:'Dr. Samuel Roy', init:'SR', id:'FAC-0231', dept:'Computer Science', designation:'Associate Professor', cabin:'Block C, 214'},
+  admin:   {name:'Priya Kulkarni', init:'PK', id:'ADM-004', dept:'Administration', designation:'System Administrator', cabin:'Admin Block, G-1'},
+};
+
+/* ---------------- STUDENT DATA ---------------- */
+/* Exam schedule has no backend model (would need a full course/exam-calendar
+   system) — kept as a clearly-labelled mock, same as fees (excluded per
+   scope: no payment gateway). Everything else below is real. */
+const examSchedule = [
+  {sub:'Database Mgmt Systems', date:'12 Aug, 10:00 AM'},
+  {sub:'Operating Systems', date:'14 Aug, 10:00 AM'},
+  {sub:'Computer Networks', date:'16 Aug, 02:00 PM'},
+];
+const feeStatus = {paid:68000, total:85000, due:'20 Aug 2026'};
+
+let studentAttendanceRecords = [];  // this student's real /attendance rows
+let studentMarkRecords = [];        // this student's real /marks rows
+let chatHistory = [];               // this user's real /chatbot/history rows
+
+/* ---------------- TEACHER DATA ---------------- */
+/* There's no course/enrollment model in the backend, so "classes" remain
+   display labels rather than a real roster filter — every class draws from
+   the same real student body. Disclosed clearly in the UI copy too. */
+const teacherClasses = [
+  {name:'CS301 - Database Mgmt', sec:'Section A · Sem 6'},
+  {name:'CS304 - AI/ML Lab', sec:'Section B · Sem 6'},
+  {name:'CS210 - Data Structures', sec:'Section A · Sem 4'},
+  {name:'CS215 - Discrete Math', sec:'Section C · Sem 4'},
+];
+let uploadHistory = [];   // session log of marks actually saved this session (real actions, not persisted separately)
+let teacherRoster = [];   // real students, fetched from GET /users?role=student
+
+const CURRENT_SEMESTER = { start:'2026-07-15', end:'2026-12-15', label:'Odd Semester 2026 (Jul – Dec)' };
+const ASSESSMENTS = ['Internal Assessment 1','Internal Assessment 2','Internal Assessment 3'];
+const SEMESTER_OPTIONS = ['Current Semester','Previous Semester'];
+
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function formatDateNice(iso){ return new Date(iso).toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'}); }
+
+/* ---------------- SHARED / ADMIN DATA ---------------- */
+const adminStats = [
+  {num:'0', lbl:'Students', icon:'users', delta:'loading…', good:true},
+  {num:'0', lbl:'Teachers', icon:'users', delta:'loading…', good:true},
+  {num:'0', lbl:'Departments', icon:'dept', delta:'loading…', good:true},
+  {num:'0', lbl:'FAQs indexed', icon:'faq', delta:'loading…', good:true},
+  {num:'0', lbl:'Feedback pending', icon:'feedback', delta:'loading…', good:false},
+  {num:'0', lbl:'Chatbot queries today', icon:'chat', delta:'loading…', good:true},
+];
+const adminActions = [
+  ['users','Manage Students','users:student'],
+  ['users','Manage Teachers','users:teacher'],
+  ['dept','Departments & Courses','dept'],
+  ['faq','Manage FAQs','faq'],
+  ['import','Import FAQ Dataset','import'],
+  ['attendance','Manage Attendance','attendance'],
+  ['marks','Manage Marks','marks'],
+  ['announce','Publish Announcement','announce'],
+  ['reset','Reset Passwords','reset'],
+  ['stats','Chatbot Usage Stats','stats'],
+  ['feedback','Review Feedback','feedback'],
+  ['reports','Generate Reports','reports'],
+];
+
+let announcementsList = [];     // real /announcements, shared by every role
+let adminFeedbackList = [];     // real /feedback, admin-only view
+let chatStats = null;           // real /chatbot/stats (admin-only)
+
+/* =========================================================
+   LIVE BACKEND CONNECTION
+   These used to be hardcoded mock arrays. They're now populated by real
+   fetch() calls to the FastAPI backend after login — see the load*()
+   functions below. The shape of each object is kept identical to the old
+   mock data (id/name/email/dept/sem/designation/status) so every existing
+   render function keeps working unchanged; the only new field is `dbId`,
+   the real database primary key used for PUT/DELETE calls.
+========================================================= */
+const API_BASE = 'http://127.0.0.1:8000'; // change this if your backend runs elsewhere
+let authToken = null;
+let apiOffline = false; // set true if the backend can't be reached, so we can warn instead of silently failing
+
+let pendingAdmins = [];
+let studentRecords = [];
+let teacherRecords = [];
+let departmentRecords = [];
+
+function updateStudentOptions(courseId, branchId, semesterId) {
+  const course = document.getElementById(courseId);
+  const branch = document.getElementById(branchId);
+  const semester = document.getElementById(semesterId);
+  if (!course || !branch || !semester) return;
+
+  const previousBranch = branch.value;
+  const branches = PROGRAMS[course.value]?.branches || PROGRAMS['B.Tech'].branches;
+  branch.innerHTML = '';
+  branches.forEach(name => branch.add(new Option(name, name)));
+  if (branches.includes(previousBranch)) branch.value = previousBranch;
+
+  const semesterCount = PROGRAMS[course.value]?.years === 2 ? 4 : 8;
+  const previousSemester = semester.value;
+  semester.innerHTML = '';
+  for (let i = 1; i <= semesterCount; i++) {
+    const suffix = i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th';
+    const value = `${i}${suffix}`;
+    semester.add(new Option(`${value} Semester`, value));
+  }
+  if ([...semester.options].some(option => option.value === previousSemester)) {
+    semester.value = previousSemester;
+  }
+}
+
+document.addEventListener('change', function(event) {
+  if (event.target.id === 'mCourse') updateStudentOptions('mCourse', 'mBranch', 'mSemester');
+  if (event.target.id === 'eCourse') updateStudentOptions('eCourse', 'eBranch', 'eSemester');
+});
+
+function authHeaders(extra){
+  const h = Object.assign({}, extra || {});
+  if(authToken) h['Authorization'] = 'Bearer ' + authToken;
+  return h;
+}
+
+async function apiRequest(path, options){
+  try{
+    const res = await fetch(API_BASE + path, options || {});
+    let data = null;
+    try { data = await res.json(); } catch(e) { /* no body */ }
+    if(!res.ok){
+      const msg = (data && data.detail) ? data.detail : `Request failed (${res.status})`;
+      return { ok:false, status:res.status, error:msg, data:null };
+    }
+    return { ok:true, status:res.status, error:null, data };
+  } catch(err){
+    apiOffline = true;
+    return { ok:false, status:0, error:`Could not reach the ${COLLEGE_SHORT} API at ${API_BASE}. Is the backend running?`, data:null };
+  }
+}
+
+function getSemesterOptions(course, selected = '') {
+    const count = PROGRAMS[course].years * 2;
+
+    return Array.from({ length: count }, (_, i) => {
+        const n = i + 1;
+        const suffix =
+            n === 1 ? 'st' :
+            n === 2 ? 'nd' :
+            n === 3 ? 'rd' : 'th';
+
+        const value = `${n}${suffix} Semester`;
+
+        return `<option value="${value}"
+            ${value === selected ? 'selected' : ''}>
+            ${value}
+        </option>`;
+    }).join('');
+}
+
+async function approveAdmin(dbId){
+  const res = await apiRequest(`/users/${dbId}`, {method:'PUT', headers:authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({status:'Active'})});
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  showToast('Admin approved.');
+  await loadAdminData(); renderPage();
+}
+async function rejectAdmin(dbId){
+  const res = await apiRequest(`/users/${dbId}`, {method:'DELETE', headers:authHeaders()});
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  showToast('Request rejected.');
+  await loadAdminData(); renderPage();
+}
+
+function rebuildTeacherClasses(){
+  const covered = new Set(teacherClasses.map(c => (c.sec.match(/Sem\s*(\d+)/i)||[])[1]).filter(Boolean));
+  const realSems = new Set(teacherRoster.map(s => (s.sem||'').replace(/\D/g,'')).filter(Boolean));
+  realSems.forEach(sem => {
+    if(!covered.has(sem)) teacherClasses.push({ name:`General Coursework - Sem ${sem}`, sec:`All Sections · Sem ${sem}` });
+  });
+}
+
+function mapUserFromAPI(u){
+  return {
+    dbId: u.id,          // real numeric primary key — used for PUT/DELETE
+    id: u.display_id,    // display-facing ID (e.g. CS21B045) — unchanged from before
+    name: u.name,
+    email: u.email,
+    dept: u.department,
+    sem: u.semester,
+    course: u.course,
+    specialization: u.specialization,
+    designation: u.designation,
+    status: u.status,
+  };
+}
+
+/* Pulls departments + students + teachers from the real database and
+   refreshes the local caches every admin page reads from. Called right
+   after an admin logs in, and again after any add/edit/remove so the
+   screen always reflects what's actually in orbit.db. */
+async function loadAdminData(){
+  const [deptRes, studRes, teachRes, adminRes] = await Promise.all([
+    apiRequest('/departments', { headers: authHeaders() }),
+    apiRequest('/users?role=student', { headers: authHeaders() }),
+    apiRequest('/users?role=teacher', { headers: authHeaders() }),
+    apiRequest('/users?role=admin', { headers: authHeaders() }),
+  ]);
+
+  if(adminRes.ok){
+    pendingAdmins = adminRes.data.filter(a => a.status === 'Pending').map(mapUserFromAPI);
+  }
+
+  if(deptRes.ok){
+    departmentRecords = deptRes.data.map(d => ({ id:d.id, name:d.name, hod:d.hod, courses:d.courses, students:0 }));
+  }
+  if(studRes.ok){
+    studentRecords = studRes.data.map(mapUserFromAPI);
+  }
+  if(teachRes.ok){
+    teacherRecords = teachRes.data.map(mapUserFromAPI);
+  }
+  // Real per-department headcounts, computed from the students we just loaded
+  departmentRecords.forEach(d => {
+    d.students = studentRecords.filter(s => s.dept === d.name).length;
+  });
+
+  if(!deptRes.ok || !studRes.ok || !teachRes.ok){
+    showToast(deptRes.error || studRes.error || teachRes.error, 'warn');
+  }
+}
+
+/* Shared across every role: student dashboards, teacher dashboard widget,
+   and the admin Publish Announcement page all read the same real list. */
+async function loadAnnouncements(){
+  const res = await apiRequest('/announcements');
+  if(res.ok) announcementsList = res.data;
+}
+
+/* Real students for a teacher to mark attendance/enter marks against —
+   there's no course-enrollment model, so this is the whole student body,
+   not a per-class roster (see the note on teacherClasses above). */
+async function loadTeacherRoster(){
+  const res = await apiRequest('/users?role=student', { headers: authHeaders() });
+  if(res.ok){
+    teacherRoster = res.data.map(u => ({ dbId:u.id, roll:u.display_id, name:u.name, dept:u.department, sem:u.semester }));
+    rebuildTeacherClasses();
+  } else {
+    showToast(res.error, 'warn');
+  }
+}
+
+/* This student's own real attendance/marks/chat history, fetched once at
+   login and used by every student-facing page and dashboard widget. */
+async function loadStudentData(){
+  if(!activeAccount || !activeAccount.dbId) return;
+  const [attRes, markRes, histRes] = await Promise.all([
+    apiRequest(`/attendance?student_id=${activeAccount.dbId}`, { headers: authHeaders() }),
+    apiRequest(`/marks?student_id=${activeAccount.dbId}`, { headers: authHeaders() }),
+    apiRequest('/chatbot/history?limit=10', { headers: authHeaders() }),
+  ]);
+  if(attRes.ok) studentAttendanceRecords = attRes.data;
+  if(markRes.ok) studentMarkRecords = markRes.data;
+  if(histRes.ok) chatHistory = histRes.data;
+}
+
+async function loadAdminFeedback(){
+  const res = await apiRequest('/feedback', { headers: authHeaders() });
+  if(res.ok) adminFeedbackList = res.data;
+}
+
+function rosterForClass(cls){
+  const m = cls.sec.match(/Sem\s*(\d+)/i);
+  if(!m) return teacherRoster;
+  const semNum = m[1];
+  const filtered = teacherRoster.filter(s => (s.sem||'').replace(/\D/g,'') === semNum);
+  return filtered.length ? filtered : teacherRoster; // no match? show everyone rather than an empty page
+}
+
+async function loadChatStats(){
+  const [statsRes, recentRes] = await Promise.all([
+    apiRequest('/chatbot/stats', { headers: authHeaders() }),
+    apiRequest('/chatbot/recent?limit=15', { headers: authHeaders() }),
+  ]);
+  if(statsRes.ok) chatStats = statsRes.data;
+  if(recentRes.ok) sessionQueries = recentRes.data; // reuses the existing admin-stats-page rendering
+}
+
+
+
+/* =========================================================
+   FAQ KNOWLEDGE BASE — loaded live from the backend (GET /faq), not
+   hardcoded here. See loadFaqData() and sendChat(), which calls the real
+   POST /chatbot/ask retrieval endpoint instead of matching client-side.
+========================================================= */
+let FAQ_DB = [];
+let sessionQueries = []; // populated from the real /chatbot/recent endpoint (see loadChatStats)
+
+async function loadFaqData(){
+  const res = await apiRequest('/faq');
+  if(res.ok){
+    FAQ_DB = res.data.map(f => ({
+      dbId: f.id, question: f.question, answer: f.answer,
+      category: f.category, image_url: f.image_url, image_alt: f.image_alt,
+    }));
+  } else if(apiOffline){
+    showToast(res.error, 'warn');
+  }
+}
+
+/* ---------------- CLOCK ---------------- */
+function tickClock(){
+  const el = document.getElementById('clockEl');
+  if(!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}) + '  ·  ' + now.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(tickClock, 1000*30);
+
+/* ---------------- TOAST + MODAL UTILITIES ---------------- */
+function showToast(msg, type){
+  const root = document.getElementById('toastRoot');
+  if(!root) return;
+  const el = document.createElement('div');
+  el.className = 'toast' + (type==='warn' ? ' toast-warn' : '');
+  el.textContent = msg;
+  root.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 2800);
+}
+
+function openModal(title, bodyHTML, footerHTML){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-box">
+        <div class="modal-head"><h3>${title}</h3><button onclick="closeModal()">✕</button></div>
+        <div class="modal-body">${bodyHTML}</div>
+        ${footerHTML ? `<div class="modal-foot">${footerHTML}</div>` : ''}
+      </div>
+    </div>`;
+  requestAnimationFrame(()=>{
+    const ov = root.querySelector('.modal-overlay');
+    if(ov) ov.classList.add('open');
+  });
+}
+function closeModal(){
+  const overlay = document.querySelector('.modal-overlay');
+  if(overlay){
+    overlay.classList.remove('open');
+    setTimeout(()=>{ const r=document.getElementById('modalRoot'); if(r) r.innerHTML=''; }, 200);
+  }
+}
+
+/* ---------------- LOGIN ---------------- */
+let activeAccount = null; // the matched record for whichever user is currently logged in
+
+function initials(name){
+  return (name||'').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+}
+
+/* Merges the logged-in account's real data with a couple of cosmetic-only
+   defaults (advisor, cabin, etc.) that aren't part of the login-relevant record. */
+function getActiveProfile(){
+  if(!activeAccount) return USERS[currentRole];
+  if(currentRole === 'student'){
+    return {
+      name: activeAccount.name, init: initials(activeAccount.name), roll: activeAccount.id,
+      dept: activeAccount.dept, sem: activeAccount.sem + ' Semester',
+      advisor: USERS.student.advisor, dob: USERS.student.dob,
+    };
+  }
+  if(currentRole === 'teacher'){
+    return {
+      name: activeAccount.name, init: initials(activeAccount.name), id: activeAccount.id,
+      dept: activeAccount.dept, designation: activeAccount.designation, cabin: USERS.teacher.cabin,
+    };
+  }
+  return {
+    name: activeAccount.name, init: initials(activeAccount.name), id: activeAccount.id,
+    dept: activeAccount.dept, designation: activeAccount.designation, cabin: USERS.admin.cabin,
+  };
+}
+
+function selectRole(role){
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach(b=>b.classList.toggle('active', b.dataset.role===role));
+  document.getElementById('loginId').value = role==='student' ? `aria.nair@${COLLEGE_EMAIL_DOMAIN}` : role==='teacher' ? `samuel.roy@${COLLEGE_EMAIL_DOMAIN}` : `priya.kulkarni@${COLLEGE_EMAIL_DOMAIN}`;
+  document.getElementById('loginPw').value = '';
+  hideLoginError();
+}
+
+function hideLoginError(){
+  const err = document.getElementById('loginError');
+  if(err) err.style.display = 'none';
+}
+function showLoginError(msg){
+  const err = document.getElementById('loginError');
+  if(err){ err.textContent = msg; err.style.display = 'block'; }
+  const card = document.querySelector('.login-card');
+  if(card){ card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); }
+}
+
+/* Real authentication: posts to the FastAPI backend, which checks the
+   bcrypt-hashed password in orbit.db and returns a signed JWT. No password
+   ever lives in this file anymore — that's the whole point of the fix. */
+async function doLogin(){
+  const email = (document.getElementById('loginId').value || '').trim().toLowerCase();
+  const pw = document.getElementById('loginPw').value;
+
+  if(!email || !pw){
+    showLoginError('Please enter both your email and password.');
+    return;
+  }
+
+  const btn = document.querySelector('.login-btn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Signing in…'; }
+  hideLoginError();
+
+  const loginRes = await apiRequest('/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pw, role: currentRole }),
+  });
+
+  if(btn){ btn.disabled = false; btn.textContent = 'Sign in securely'; }
+
+  if(!loginRes.ok){
+    showLoginError(loginRes.error);
+    return;
+  }
+
+  authToken = loginRes.data.access_token;
+
+  // Pull the full profile (department, semester/designation, status) now that we're authenticated
+  const meRes = await apiRequest('/users/me', { headers: authHeaders() });
+  activeAccount = meRes.ok
+    ? { dbId: meRes.data.id, id: meRes.data.display_id, name: meRes.data.name, email: meRes.data.email, dept: meRes.data.department, sem: meRes.data.semester, designation: meRes.data.designation, status: meRes.data.status }
+    : { dbId: null, id: loginRes.data.display_id, name: loginRes.data.name, email, dept: '', sem: '', designation: '' };
+
+  document.getElementById('loginScreen').style.transition = 'opacity .35s ease';
+  document.getElementById('loginScreen').style.opacity = '0';
+  setTimeout(async ()=>{
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').classList.add('active');
+    currentPage = { student:'dashboard', teacher:'dashboard', admin:'dashboard' };
+    buildSidebar();
+    setActiveNav('dashboard');
+    tickClock();
+    seedChat();
+    await loadFaqData(); // needed by every role's chatbot, not just admin's FAQ Manager
+    await loadAnnouncements(); // shared by every role's dashboard/announcements page
+
+    if(currentRole === 'student'){
+      await loadStudentData();
+      checkAttendanceRisk();
+    } else if(currentRole === 'teacher'){
+      await loadTeacherRoster();
+    } else if(currentRole === 'admin'){
+      await loadAdminData();
+      await loadAdminFeedback();
+      await loadChatStats();
+    }
+    renderPage(); // re-render now that real data has arrived, whichever page we're on
+  }, 320);
+}
+
+function checkAttendanceRisk(){
+  const att = computeAttendanceSummary(studentAttendanceRecords);
+  const risky = att.byClass.filter(c => c.p < 75);
+  if(risky.length) showToast(`⚠ Attendance below 75% in: ${risky.map(c=>c.s).join(', ')}`, 'warn');
+}
+
+function doLogout(){
+  document.getElementById('appShell').classList.remove('active');
+  document.getElementById('loginScreen').style.display = 'flex';
+  requestAnimationFrame(()=>{ document.getElementById('loginScreen').style.opacity = '1'; });
+  document.getElementById('chatPanel').classList.remove('open');
+  chatOpen = false;
+  activeAccount = null;
+  authToken = null;
+  document.getElementById('loginPw').value = '';
+  hideLoginError();
+}
+
+/* Renders the demo credentials hint panel on the login screen. These are a
+   static reference to what seed.py loads into the real database — the
+   frontend no longer holds any passwords itself, hashed or otherwise. */
+function toggleDemoCreds(){
+  const panel = document.getElementById('demoCredsPanel');
+  const toggle = document.getElementById('demoToggleBtn');
+  if(!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  if(isOpen){ panel.style.display = 'none'; if(toggle) toggle.textContent = 'View demo login credentials ▾'; return; }
+  const rows = [
+    ['Student', `aria.nair@${COLLEGE_EMAIL_DOMAIN}`, 'Aria@2026'],
+    ['Student', `rohan.iyer@${COLLEGE_EMAIL_DOMAIN}`, 'Rohan@2026'],
+    ['Student', `meera.pillai@${COLLEGE_EMAIL_DOMAIN}`, 'Meera@2026'],
+    ['Teacher', `samuel.roy@${COLLEGE_EMAIL_DOMAIN}`, 'Samuel@2026'],
+    ['Teacher', `meera.iyer@${COLLEGE_EMAIL_DOMAIN}`, 'MeeraI@2026'],
+    ['Teacher', `rekha.menon@${COLLEGE_EMAIL_DOMAIN}`, 'Rekha@2026'],
+    ['Admin', `priya.kulkarni@${COLLEGE_EMAIL_DOMAIN}`, 'Admin@2026'],
+  ];
+  panel.innerHTML = `<table class="demo-table">
+    <tr><th>Role</th><th>Email</th><th>Password</th></tr>
+    ${rows.map(r=>`<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join('')}
+  </table>
+  <p style="margin:8px 0 0 0;font-size:10.5px;color:var(--slate);">From <code>app/seed.py</code> — requires the ${COLLEGE_SHORT} backend running at ${API_BASE}. Change any of these anytime from Admin → Manage Users → Edit.</p>`;
+  panel.style.display = 'block';
+  if(toggle) toggle.textContent = 'Hide demo login credentials ▴';
+}
+
+/* ---------------- SIDEBAR / TOPBAR ---------------- */
+function buildSidebar(){
+  const nav = document.getElementById('sideNav');
+  nav.innerHTML = NAV[currentRole].map(([key,label],i)=>`
+    <button class="side-btn ${i===0?'active':''}" data-key="${key}" onclick="setActiveNav('${key}')">
+      <span class="tip">${label}</span>
+      ${ICONS[key] || ICONS.dashboard}
+    </button>
+  `).join('');
+
+  const u = getActiveProfile();
+  document.getElementById('userNameTop').textContent = u.name;
+  document.getElementById('avatarInit').textContent = u.init;
+  document.getElementById('roleBadge').textContent = currentRole.toUpperCase();
+}
+
+function setActiveNav(rawKey){
+  const parts = rawKey.split(':');
+  const key = parts[0];
+  const sub = parts[1];
+  if(sub) activeUserTab = sub;
+  currentPage[currentRole] = key;
+  document.querySelectorAll('.side-btn').forEach(b=>b.classList.toggle('active', b.dataset.key===key));
+  document.getElementById('pageTitle').textContent = (TITLES[currentRole] && TITLES[currentRole][key]) || 'Dashboard';
+
+  // Force these admin overview pages to re-aggregate from the backend on every visit
+  if(currentRole === 'admin' && key === 'attendance') adminAttendanceCache = null;
+  if(currentRole === 'admin' && key === 'marks') adminMarksCache = null;
+  if(currentRole === 'admin' && key === 'stats') chatStats = null;
+  if(currentRole === 'admin' && key === 'feedback') loadAdminFeedback().then(renderPage);
+  if(currentRole === 'teacher' && key === 'perf') perfCache = null;
+
+  renderPage();
+}
+
+/* ---------------- PAGE ROUTER ---------------- */
+const PAGES = {
+  student: {
+    dashboard: studentPage_dashboard,
+    attendance: studentPage_attendance,
+    marks: studentPage_marks,
+    fees: studentPage_fees,
+    announce: studentPage_announce,
+  },
+  teacher: {
+    dashboard: teacherPage_dashboard,
+    classes: teacherPage_classes,
+    attendance: teacherPage_attendance,
+    marks: teacherPage_marks,
+    perf: teacherPage_perf,
+  },
+  admin: {
+    dashboard: adminPage_dashboard,
+    users: adminPage_users,
+    dept: adminPage_dept,
+    faq: adminPage_faq,
+    import: adminPage_import,
+    reports: adminPage_reports,
+    attendance: adminPage_attendance,
+    marks: adminPage_marks,
+    announce: adminPage_announce,
+    reset: adminPage_reset,
+    stats: adminPage_stats,
+    feedback: adminPage_feedback,
+  },
+};
+
+function renderPage(){
+  const el = document.getElementById('contentArea');
+  const key = currentPage[currentRole];
+  el.classList.toggle('nogrow', key === 'dashboard');
+  const fn = (PAGES[currentRole] && PAGES[currentRole][key]) || PAGES[currentRole].dashboard;
+  el.innerHTML = fn();
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+}
+
+function gaugeSVG(pct){
+  const r = 38, c = 2*Math.PI*r;
+  const offset = c * (1 - pct/100);
+  return `<svg width="88" height="88" viewBox="0 0 88 88">
+    <circle cx="44" cy="44" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
+    <circle cx="44" cy="44" r="${r}" fill="none" stroke="url(#g1)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${offset}"/>
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6ea1ff"/><stop offset="100%" stop-color="#2f6fed"/>
+    </linearGradient></defs>
+  </svg>`;
+}
+
+/* =========================================================
+   STUDENT PAGES
+========================================================= */
+/* Small helpers shared by the student attendance/marks pages */
+function computeAttendanceSummary(records){
+  if(!records.length) return { overall: null, byClass: [] };
+  const present = records.filter(r=>r.present).length;
+  const overall = Math.round(present / records.length * 100);
+  const classes = [...new Set(records.map(r=>r.class_name))];
+  const byClass = classes.map(c=>{
+    const rows = records.filter(r=>r.class_name===c);
+    const pct = Math.round(rows.filter(r=>r.present).length / rows.length * 100);
+    return { s:c, p:pct };
+  });
+  return { overall, byClass };
+}
+function computeMarksAverage(records){
+  if(!records.length) return null;
+  const pct = records.reduce((sum,r)=> sum + (r.marks/r.max_marks*100), 0) / records.length;
+  return pct.toFixed(1);
+}
+
+function studentPage_dashboard(){
+  const u = getActiveProfile();
+  const att = computeAttendanceSummary(studentAttendanceRecords);
+  const riskyClasses = att.byClass.filter(c => c.p < 75);
+  const avgPct = computeMarksAverage(studentMarkRecords);
+  return `
+    ${riskyClasses.length ? `<div class="card" style="border-color:var(--bad);background:rgba(240,80,110,0.1);margin-bottom:14px;"><b style="color:var(--bad);">⚠ Attendance Alert:</b> <span style="color:#fff;">below 75% in ${riskyClasses.map(c=>`${c.s} (${c.p}%)`).join(', ')} — exam eligibility at risk.</span></div>` : ''}
+  <div class="grid-student">
+    <div class="card g-profile">
+      <div class="profile-photo">${u.init}</div>
+      <div class="profile-name">${u.name}</div>
+      <div class="profile-meta">${u.roll}<br/>${u.dept}</div>
+      <div class="profile-divider"></div>
+      <div class="profile-info-row"><span>Semester</span><b>${u.sem}</b></div>
+      <div class="profile-info-row"><span>Advisor</span><b>${u.advisor}</b></div>
+      <div class="profile-info-row"><span>DOB</span><b>${u.dob}</b></div>
+    </div>
+
+    <div class="card g-quick">
+      <h3 class="card-title">Quick Actions</h3>
+      <button class="quick-btn" onclick="openChat()">${ICONS.chat}Ask ${COLLEGE_SHORT} AI</button>
+      <button class="quick-btn" onclick="openFeedbackModal()">${ICONS.feedback}Submit Chatbot Feedback</button>
+      <button class="quick-btn" onclick="setActiveNav('fees')">${ICONS.fees}Pay Fees</button>
+    </div>
+
+    <div class="card g-attendance" style="cursor:pointer;" onclick="setActiveNav('attendance')">
+      <h3 class="card-title">Attendance ${att.overall!=null ? `<span class="pill ${att.overall>=75?'pill-good':'pill-bad'}">${att.overall}% overall</span>` : ''}</h3>
+      ${att.overall!=null ? `
+      <div class="gauge-wrap">
+        <div class="gauge">${gaugeSVG(att.overall)}<div class="gauge-val">${att.overall}%</div></div>
+        <div style="flex:1;">
+          ${att.byClass.map(s=>`
+            <div class="subj-bar-row">
+              <span class="lbl">${s.s}</span>
+              <div class="subj-bar-track"><div class="subj-bar-fill" style="width:${s.p}%"></div></div>
+              <span class="subj-bar-pct">${s.p}%</span>
+            </div>`).join('')}
+        </div>
+      </div>` : `<p style="color:var(--slate-300);font-size:12px;">No attendance recorded yet — your teacher marks this per class.</p>`}
+    </div>
+
+    <div class="card g-marks" style="cursor:pointer;" onclick="setActiveNav('marks')">
+      <h3 class="card-title">Internal Marks &amp; Results</h3>
+      ${studentMarkRecords.length ? `
+      <table class="marks-table">
+        <tr><th>Class</th><th>Assessment</th><th>Marks</th></tr>
+        ${studentMarkRecords.slice(0,4).map(m=>`<tr><td>${m.class_name}</td><td>${m.assessment}</td><td class="mono" style="color:var(--slate-300)">${m.marks}/${m.max_marks}</td></tr>`).join('')}
+      </table>
+      <div class="cgpa-chip">
+        <span style="color:var(--slate-300);font-size:12px;">Average score</span>
+        <span class="num">${avgPct}%</span>
+      </div>` : `<p style="color:var(--slate-300);font-size:12px;">No marks recorded yet.</p>`}
+    </div>
+
+    <div class="card g-exams">
+      <h3 class="card-title">Exam Schedule <span class="pill pill-blue">indicative</span></h3>
+      ${examSchedule.map(e=>`<div class="exam-row"><span class="nm">${e.sub}</span><span class="dt">${e.date}</span></div>`).join('')}
+    </div>
+
+    <div class="card g-fees" style="cursor:pointer;" onclick="setActiveNav('fees')">
+      <h3 class="card-title">Fee Status <span class="pill pill-warn">Due ${feeStatus.due}</span></h3>
+      <div class="fee-amt">₹${(feeStatus.total-feeStatus.paid).toLocaleString()}</div>
+      <div class="fee-sub">remaining of ₹${feeStatus.total.toLocaleString()}</div>
+      <div class="fee-bar-track"><div class="fee-bar-fill" style="width:${Math.round(feeStatus.paid/feeStatus.total*100)}%"></div></div>
+      <div class="fee-sub">₹${feeStatus.paid.toLocaleString()} paid so far</div>
+    </div>
+
+    <div class="card g-history">
+      <h3 class="card-title">Chat History</h3>
+      ${chatHistory.length ? chatHistory.map(h=>`<div class="hist-row"><div class="hist-dot"></div><p><b style="color:#fff">${timeAgo(h.created_at)}</b> — ${h.query_text}</p></div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">No chatbot queries yet — ask ${COLLEGE_SHORT} AI something.</p>'}
+    </div>
+
+    <div class="card g-announce" style="cursor:pointer;" onclick="setActiveNav('announce')">
+      <h3 class="card-title">Announcements</h3>
+      ${announcementsList.slice(0,5).map(a=>`
+        <div class="announce-item">
+          <span class="tag">${a.tag}</span>
+          <div class="ttl">${a.title}</div>
+          <div class="dt">${formatDateNice(a.created_at)}</div>
+        </div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">No announcements yet.</p>'}
+    </div>
+  </div>`;
+}
+
+function timeAgo(iso){
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs/60000);
+  if(mins < 1) return 'just now';
+  if(mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins/60);
+  if(hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs/24)}d ago`;
+}
+
+function studentPage_attendance(){
+  const att = computeAttendanceSummary(studentAttendanceRecords);
+  const logRows = [...studentAttendanceRecords].sort((a,b)=> b.date.localeCompare(a.date)).slice(0,10);
+  return `
+  <div class="page-head">
+    <div><h2>Attendance</h2><p>Real attendance records marked by your teachers, grouped by class.</p></div>
+    ${att.overall!=null ? `<span class="pill ${att.overall>=75?'pill-good':'pill-bad'}">Overall ${att.overall}%</span>` : ''}
+  </div>
+  <div class="cards-grid-2">
+    <div class="card">
+      <h3 class="card-title">Class-wise Attendance</h3>
+      ${att.byClass.length ? att.byClass.map(s=>`
+        <div class="subj-bar-row" style="margin-bottom:12px;">
+          <span class="lbl" style="width:120px;">${s.s}</span>
+          <div class="subj-bar-track"><div class="subj-bar-fill" style="width:${s.p}%; background:${s.p<75?'linear-gradient(90deg,#f0506e,#f5a524)':'linear-gradient(90deg,var(--blue-500),var(--blue-300))'}"></div></div>
+          <span class="subj-bar-pct">${s.p}%</span>
+        </div>`).join('') : `<p style="color:var(--slate-300);font-size:12px;">No attendance recorded yet.</p>`}
+      <p style="color:var(--slate-300);font-size:11.5px;margin-top:10px;">Minimum 75% attendance is required in each class to be eligible for semester examinations.</p>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Recent Attendance Log</h3>
+      ${logRows.length ? logRows.map(r=>`<div class="exam-row"><span class="nm">${r.class_name} — ${formatDateNice(r.date)}</span><span class="dt" style="color:${r.present?'var(--good)':'var(--bad)'}">${r.present?'Present':'Absent'}</span></div>`).join('') : `<p style="color:var(--slate-300);font-size:12px;">No records yet.</p>`}
+    </div>
+  </div>`;
+}
+
+function studentPage_marks(){
+  const avgPct = computeMarksAverage(studentMarkRecords);
+  return `
+  <div class="page-head">
+    <div><h2>Marks &amp; Examinations</h2><p>Internal assessments entered by your teachers, and your indicative exam schedule.</p></div>
+    ${avgPct!=null ? `<span class="pill pill-blue">Average ${avgPct}%</span>` : ''}
+  </div>
+  <div class="cards-grid-2">
+    <div class="card">
+      <h3 class="card-title">Internal Assessment Marks</h3>
+      ${studentMarkRecords.length ? `
+      <table class="data-table">
+        <tr><th>Class</th><th>Semester</th><th>Assessment</th><th>Marks</th></tr>
+        ${studentMarkRecords.map(m=>`<tr><td>${m.class_name}</td><td>${m.semester}</td><td>${m.assessment}</td><td class="mono">${m.marks}/${m.max_marks}</td></tr>`).join('')}
+      </table>` : `<p style="color:var(--slate-300);font-size:12px;">No marks recorded yet — check back after your teacher uploads them.</p>`}
+    </div>
+    <div class="card">
+      <h3 class="card-title">Exam Schedule <span class="pill pill-blue" style="font-size:9px;">indicative</span></h3>
+      ${examSchedule.map(e=>`<div class="exam-row"><span class="nm">${e.sub}</span><span class="dt">${e.date}</span></div>`).join('')}
+      <p style="color:var(--slate-300);font-size:10.5px;margin-top:8px;">A full exam-calendar system is a stretch goal beyond this project's current scope — this list is indicative, not live.</p>
+    </div>
+  </div>`;
+}
+
+function studentPage_fees(){
+  const remaining = feeStatus.total - feeStatus.paid;
+  return `
+  <div class="page-head">
+    <div><h2>Fees</h2><p>Payment status for the current academic year. <span class="pill pill-warn" style="font-size:9px;">demo only — no payment gateway connected</span></p></div>
+    <span class="pill ${remaining>0?'pill-warn':'pill-good'}">${remaining>0?'Due '+feeStatus.due:'Fully Paid'}</span>
+  </div>
+  <div class="cards-grid-2">
+    <div class="card">
+      <h3 class="card-title">Fee Summary</h3>
+      <div class="fee-amt">₹${remaining.toLocaleString()}</div>
+      <div class="fee-sub">remaining of ₹${feeStatus.total.toLocaleString()}</div>
+      <div class="fee-bar-track"><div class="fee-bar-fill" style="width:${Math.round(feeStatus.paid/feeStatus.total*100)}%"></div></div>
+      <div class="fee-sub">₹${feeStatus.paid.toLocaleString()} paid so far</div>
+      ${remaining>0 ? `<button class="btn-primary" style="margin-top:14px;" onclick="payFees()">Pay ₹${remaining.toLocaleString()} Now</button>` : `<p style="color:var(--good);font-size:12px;margin-top:14px;">✓ All dues cleared for this academic year.</p>`}
+    </div>
+    <div class="card">
+      <h3 class="card-title">Fee Breakup</h3>
+      <div class="exam-row"><span class="nm">Tuition</span><span class="dt mono">₹68,000</span></div>
+      <div class="exam-row"><span class="nm">Lab Fee</span><span class="dt mono">₹10,000</span></div>
+      <div class="exam-row"><span class="nm">Library Fee</span><span class="dt mono">₹4,000</span></div>
+      <div class="exam-row"><span class="nm">Exam Fee</span><span class="dt mono">₹3,000</span></div>
+      <h3 class="card-title" style="margin-top:16px;">Payment History</h3>
+      <div class="exam-row"><span class="nm">Installment 1 — Tuition</span><span class="dt mono">₹40,000</span></div>
+      <div class="exam-row"><span class="nm">Installment 2 — Tuition</span><span class="dt mono">₹28,000</span></div>
+    </div>
+  </div>`;
+}
+function payFees(){
+  feeStatus.paid = feeStatus.total;
+  showToast('Payment successful — receipt sent to your registered email. (Demo only — no real payment gateway is connected.)');
+  renderPage();
+}
+
+let announceFilter = 'All';
+function studentPage_announce(){
+  const tags = ['All', ...new Set(announcementsList.map(a=>a.tag))];
+  const filtered = announceFilter==='All' ? announcementsList : announcementsList.filter(a=>a.tag===announceFilter);
+  return `
+  <div class="page-head"><div><h2>Announcements</h2><p>College-wide notices, published live by administrators.</p></div></div>
+  <div class="filter-tabs">
+    ${tags.map(t=>`<button class="filter-tab ${announceFilter===t?'active':''}" onclick="announceFilter='${t}';renderPage();">${t}</button>`).join('')}
+  </div>
+  <div class="cards-grid-2">
+    ${filtered.map(a=>`
+      <div class="card" style="min-height:auto;">
+        <span class="pill pill-blue" style="align-self:flex-start;">${a.tag}</span>
+        <h3 style="color:#fff;font-size:14px;margin:10px 0 6px 0;">${a.title}</h3>
+        <p style="color:var(--slate-300);font-size:11.5px;margin:0;">${formatDateNice(a.created_at)}</p>
+      </div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">No announcements yet.</p>'}
+  </div>`;
+}
+
+/* =========================================================
+   TEACHER PAGES
+========================================================= */
+let todayAttendanceStats = null;
+async function loadTodayAttendanceStats(){
+  const res = await apiRequest(`/attendance?on_date=${todayISO()}`, { headers: authHeaders() });
+  todayAttendanceStats = res.ok
+    ? { total: res.data.length, presentPct: res.data.length ? Math.round(res.data.filter(r=>r.present).length/res.data.length*100) : 0, classesMarked: new Set(res.data.map(r=>r.class_name)).size }
+    : { total: 0, presentPct: 0, classesMarked: 0 };
+  renderPage();
+}
+
+function teacherPage_dashboard(){
+  const u = getActiveProfile();
+  if(todayAttendanceStats === null) loadTodayAttendanceStats(); // fire-and-forget, re-renders when it lands
+  const stats = todayAttendanceStats || { total:0, presentPct:0, classesMarked:0 };
+  return `
+  <div class="grid-teacher">
+    <div class="card t-profile">
+      <div class="profile-photo">${u.init}</div>
+      <div class="profile-name">${u.name}</div>
+      <div class="profile-meta">${u.id}<br/>${u.designation}</div>
+      <div class="profile-divider"></div>
+      <div class="profile-info-row"><span>Department</span><b>${u.dept}</b></div>
+      <div class="profile-info-row"><span>Cabin</span><b>${u.cabin}</b></div>
+    </div>
+
+    <div class="card t-quick">
+      <h3 class="card-title">Quick Actions</h3>
+      <button class="quick-btn" onclick="openChat()">${ICONS.chat}Ask ${COLLEGE_SHORT} AI</button>
+      <button class="quick-btn" onclick="setActiveNav('attendance')">${ICONS.attendance}Mark Attendance</button>
+      <button class="quick-btn" onclick="setActiveNav('marks')">${ICONS.upload}Upload Marks</button>
+    </div>
+
+    <div class="card t-classes" style="cursor:pointer;" onclick="setActiveNav('classes')">
+      <h3 class="card-title">Assigned Classes <span class="pill pill-blue">${teacherClasses.length} active</span></h3>
+      ${teacherClasses.map(c=>`
+        <div class="class-row">
+          <div><div class="nm">${c.name}</div><div class="meta">${c.sec}</div></div>
+          <div class="cnt">${teacherRoster.length}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="card t-attend" style="cursor:pointer;" onclick="setActiveNav('attendance')">
+      <h3 class="card-title">Today's Attendance</h3>
+      <div class="attend-donut-wrap">
+        ${gaugeSVG(stats.presentPct)}
+        <div class="today-stat">
+          <div><b>${stats.classesMarked}</b><span>Classes marked</span></div>
+          <div><b>${stats.presentPct}%</b><span>Avg present</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card t-marks">
+      <h3 class="card-title">Recent Mark Uploads</h3>
+      ${uploadHistory.length ? uploadHistory.map(h=>`<div class="upload-row"><span class="nm">${h.nm}</span><span class="meta">${h.meta}</span></div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">No uploads yet this session.</p>'}
+      <button class="quick-btn" style="margin-top:10px;" onclick="setActiveNav('marks')">${ICONS.upload}Upload New Marks Sheet</button>
+    </div>
+
+    <div class="card t-perf" style="cursor:pointer;" onclick="setActiveNav('perf')">
+      <h3 class="card-title">Student Performance by Class</h3>
+      ${perfCache ? perfCache.byClass.map(p=>`
+        <div class="perf-bar-row">
+          <span class="lbl">${p.c}</span>
+          <div class="perf-bar-track"><div class="perf-bar-fill" style="width:${p.pct||0}%"></div></div>
+          <span class="perf-bar-pct">${p.pct!=null ? p.pct+'%' : '—'}</span>
+        </div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">Open Performance to load.</p>'}
+    </div>
+
+    <div class="card t-announce">
+      <h3 class="card-title">Announcements</h3>
+      ${announcementsList.slice(0,3).map(a=>`
+        <div class="announce-item">
+          <span class="tag">${a.tag}</span>
+          <div class="ttl">${a.title}</div>
+          <div class="dt">${formatDateNice(a.created_at)}</div>
+        </div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">No announcements yet.</p>'}
+    </div>
+  </div>`;
+}
+
+function teacherPage_classes(){
+  return `
+  <div class="page-head">
+    <div><h2>My Classes</h2><p>${teacherClasses.length} classes this semester. There's no course-enrollment system yet, so every class draws from the full student body (${teacherRoster.length} students) rather than a per-class roster — noted here for transparency.</p></div>
+  </div>
+  <div class="cards-grid-3">
+    ${teacherClasses.map((c)=>{
+      const perf = perfCache ? perfCache.byClass.find(p=>p.c===c.name.split(' - ')[0]) : null;
+      return `
+      <div class="card">
+        <h3 class="card-title">${c.name}</h3>
+        <p style="color:var(--slate-300);font-size:12px;margin:-6px 0 10px 0;">${c.sec}</p>
+        <div class="kv-list">
+          <div class="kv-row"><span>Student body</span><b>${teacherRoster.length} students</b></div>
+          <div class="kv-row"><span>Avg performance</span><b>${perf && perf.pct!=null ? perf.pct+'%' : '—'}</b></div>
+        </div>
+        <button class="btn-ghost" style="margin-top:12px;" onclick="viewRoster()">View Student List</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function viewRoster(){
+  openModal('Student Roster', `<div class="roster-list">${teacherRoster.map(r=>`
+    <div class="roster-item" style="grid-template-columns:90px 1fr;">
+      <span class="roster-roll mono">${r.roll}</span><span class="roster-name">${r.name} <span style="color:var(--slate-300);">— ${r.dept}</span></span>
+    </div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">No students found.</p>'}</div>`);
+}
+
+/* ---------------- ATTENDANCE (real, per class/date, backed by /attendance) ---------------- */
+let selectedClassIdx = 0;
+let selectedAttendanceDate = todayISO();
+let attendanceCache = {}; // keyed 'className::date' -> [{studentDbId, roll, name, present}]
+
+async function loadAttendanceForSelection(){
+  const cls = teacherClasses[selectedClassIdx];
+  const key = cls.name + '::' + selectedAttendanceDate;
+  const res = await apiRequest(`/attendance?class_name=${encodeURIComponent(cls.name)}&on_date=${selectedAttendanceDate}`, { headers: authHeaders() });
+  const existing = {};
+  if(res.ok) res.data.forEach(r => { existing[r.student_id] = r.present; });
+  attendanceCache[key] = rosterForClass(cls).map(s => ({
+    studentDbId: s.dbId, roll: s.roll, name: s.name,
+    present: existing.hasOwnProperty(s.dbId) ? existing[s.dbId] : true,
+  }));
+  renderPage();
+}
+
+function teacherPage_attendance(){
+  const cls = teacherClasses[selectedClassIdx];
+  const key = cls.name + '::' + selectedAttendanceDate;
+  const classPicker = `
+      <select class="select-input" onchange="selectedClassIdx=this.selectedIndex; renderPage();">
+        ${teacherClasses.map((c,i)=>`<option ${i===selectedClassIdx?'selected':''}>${c.name} — ${c.sec}</option>`).join('')}
+      </select>
+      <input type="date" class="select-input" value="${selectedAttendanceDate}" min="${CURRENT_SEMESTER.start}" max="${CURRENT_SEMESTER.end}" onchange="selectedAttendanceDate=this.value; renderPage();">`;
+
+  if(!attendanceCache[key]){
+    loadAttendanceForSelection();
+    return `
+    <div class="page-head"><div><h2>Mark / Edit Attendance</h2><p>Pick any date within the current semester period (${formatDateNice(CURRENT_SEMESTER.start)} – ${formatDateNice(CURRENT_SEMESTER.end)}) to view or correct attendance for that day.</p></div></div>
+    <div class="card" style="max-width:860px;">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">${classPicker}</div>
+      <p style="color:var(--slate-300);font-size:12px;">Loading roster…</p>
+    </div>`;
+  }
+
+  const roster = attendanceCache[key];
+  const presentCount = roster.filter(r=>r.present).length;
+  return `
+  <div class="page-head"><div><h2>Mark / Edit Attendance</h2><p>Pick any date within the current semester period (${formatDateNice(CURRENT_SEMESTER.start)} – ${formatDateNice(CURRENT_SEMESTER.end)}) to view or correct attendance for that day.</p></div></div>
+  <div class="card" style="max-width:860px;">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+      ${classPicker}
+      <span class="pill pill-blue">${presentCount}/${roster.length} present</span>
+      <span class="pill pill-good" style="margin-left:auto;">${formatDateNice(selectedAttendanceDate)}</span>
+    </div>
+    <div class="roster-list">
+      ${roster.length ? roster.map((r,i)=>`
+        <div class="roster-item">
+          <span class="roster-roll mono">${r.roll}</span>
+          <span class="roster-name">${r.name}</span>
+          <button class="toggle-switch ${r.present?'on':''}" onclick="toggleAttendance(${i})"><span class="knob"></span></button>
+          <span class="roster-status" style="color:${r.present?'var(--good)':'var(--bad)'}">${r.present?'Present':'Absent'}</span>
+        </div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">No students in the system yet — add some from Admin → Manage Users.</p>'}
+    </div>
+    <button class="btn-primary" style="margin-top:14px;" onclick="saveAttendance()" ${roster.length?'':'disabled'}>Save Attendance for ${formatDateNice(selectedAttendanceDate)}</button>
+  </div>`;
+}
+function toggleAttendance(i){
+  const cls = teacherClasses[selectedClassIdx];
+  const key = cls.name + '::' + selectedAttendanceDate;
+  attendanceCache[key][i].present = !attendanceCache[key][i].present;
+  renderPage();
+}
+async function saveAttendance(){
+  const cls = teacherClasses[selectedClassIdx];
+  const key = cls.name + '::' + selectedAttendanceDate;
+  const roster = attendanceCache[key] || [];
+  if(!roster.length) return;
+
+  const results = await Promise.all(roster.map(r => apiRequest('/attendance', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ student_id: r.studentDbId, class_name: cls.name, date: selectedAttendanceDate, present: r.present }),
+  })));
+  const failed = results.filter(r=>!r.ok).length;
+  todayAttendanceStats = null; // invalidate dashboard widget so it recomputes
+
+  if(failed) showToast(`Saved with ${failed} error(s) — check the backend is running.`, 'warn');
+  else showToast(`Attendance saved for ${cls.name} on ${formatDateNice(selectedAttendanceDate)} — ${roster.filter(r=>r.present).length}/${roster.length} present.`);
+}
+
+/* ---------------- MARKS (real, per class/semester/assessment, backed by /marks) ---------------- */
+let selectedMarksClassIdx = 0;
+let selectedSemester = 'Current Semester';
+let selectedAssessment = 'Internal Assessment 2';
+let marksCache = {}; // keyed 'className::semester::assessment' -> [{studentDbId, roll, name, marks}]
+
+async function loadMarksForSelection(){
+  const cls = teacherClasses[selectedMarksClassIdx];
+  const key = cls.name + '::' + selectedSemester + '::' + selectedAssessment;
+  const qs = `class_name=${encodeURIComponent(cls.name)}&semester=${encodeURIComponent(selectedSemester)}&assessment=${encodeURIComponent(selectedAssessment)}`;
+  const res = await apiRequest(`/marks?${qs}`, { headers: authHeaders() });
+  const existing = {};
+  if(res.ok) res.data.forEach(r => { existing[r.student_id] = r.marks; });
+  marksCache[key] = rosterForClass(cls).map(s => ({
+    studentDbId: s.dbId, roll: s.roll, name: s.name,
+    marks: existing.hasOwnProperty(s.dbId) ? existing[s.dbId] : 0,
+  }));
+  renderPage();
+}
+
+function teacherPage_marks(){
+  const cls = teacherClasses[selectedMarksClassIdx];
+  const key = cls.name + '::' + selectedSemester + '::' + selectedAssessment;
+  const pickers = `
+      <select class="select-input" onchange="selectedMarksClassIdx=this.selectedIndex; renderPage();">
+        ${teacherClasses.map((c,i)=>`<option ${i===selectedMarksClassIdx?'selected':''}>${c.name} — ${c.sec}</option>`).join('')}
+      </select>
+      <select class="select-input" onchange="selectedSemester=this.value; renderPage();">
+        ${SEMESTER_OPTIONS.map(s=>`<option ${s===selectedSemester?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="select-input" onchange="selectedAssessment=this.value; renderPage();">
+        ${ASSESSMENTS.map(a=>`<option ${a===selectedAssessment?'selected':''}>${a}</option>`).join('')}
+      </select>`;
+
+  if(!marksCache[key]){
+    loadMarksForSelection();
+    return `
+    <div class="page-head"><div><h2>Upload Marks</h2><p>Real marks, saved per class/semester/assessment.</p></div></div>
+    <div class="card" style="max-width:860px;">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">${pickers}</div>
+      <p style="color:var(--slate-300);font-size:12px;">Loading…</p>
+    </div>`;
+  }
+
+  const roster = marksCache[key];
+  const avg = roster.length ? (roster.reduce((s,r)=>s+r.marks,0) / roster.length).toFixed(1) : '0.0';
+  return `
+  <div class="page-head">
+    <div><h2>Upload Marks</h2><p>Enter internal assessment marks (out of 20) — saved for real against each student.</p></div>
+    <span class="pill pill-blue">Class avg ${avg}/20</span>
+  </div>
+  <div class="card" style="max-width:860px;">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">${pickers}</div>
+    <table class="data-table">
+      <tr><th>Roll No</th><th>Name</th><th>Marks (/20)</th></tr>
+      ${roster.length ? roster.map((r,i)=>`
+        <tr><td class="mono">${r.roll}</td><td>${r.name}</td>
+        <td><input type="number" min="0" max="20" class="marks-input" value="${r.marks}" onchange="updateMark(${i}, this.value)"></td></tr>`).join('') : '<tr><td colspan="3" style="color:var(--slate-300);">No students in the system yet.</td></tr>'}
+    </table>
+    <button class="btn-primary" style="margin-top:14px;" onclick="saveMarks()" ${roster.length?'':'disabled'}>Save Marks</button>
+  </div>`;
+}
+function updateMark(i, val){
+  const cls = teacherClasses[selectedMarksClassIdx];
+  const key = cls.name + '::' + selectedSemester + '::' + selectedAssessment;
+  marksCache[key][i].marks = Math.max(0, Math.min(20, Number(val) || 0));
+}
+async function saveMarks(){
+  const cls = teacherClasses[selectedMarksClassIdx];
+  const key = cls.name + '::' + selectedSemester + '::' + selectedAssessment;
+  const roster = marksCache[key] || [];
+  if(!roster.length) return;
+
+  const results = await Promise.all(roster.map(r => apiRequest('/marks', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ student_id: r.studentDbId, class_name: cls.name, semester: selectedSemester, assessment: selectedAssessment, marks: r.marks }),
+  })));
+  const failed = results.filter(r=>!r.ok).length;
+
+  uploadHistory.unshift({ nm:`${cls.name.split(' - ')[0]} — ${selectedAssessment} (${selectedSemester})`, meta:`${roster.length} records · just now` });
+  perfCache = null; // invalidate so Performance page recomputes with the marks we just saved
+
+  if(failed) showToast(`Saved with ${failed} error(s) — check the backend is running.`, 'warn');
+  else showToast(`Marks saved for ${cls.name} — ${selectedAssessment}, ${selectedSemester}.`);
+  renderPage();
+}
+
+/* ---------------- PERFORMANCE (real, aggregated from /marks across all classes) ---------------- */
+let perfCache = null; // { byClass:[{c,pct}], top:[{name,pct}] }
+
+async function loadPerfData(){
+  const results = await Promise.all(teacherClasses.map(c =>
+    apiRequest(`/marks?class_name=${encodeURIComponent(c.name)}`, { headers: authHeaders() })
+  ));
+  const byClass = teacherClasses.map((c,i) => {
+    const recs = results[i].ok ? results[i].data : [];
+    if(!recs.length) return { c: c.name.split(' - ')[0], pct: null };
+    const pct = Math.round(recs.reduce((s,r)=> s + r.marks/r.max_marks*100, 0) / recs.length);
+    return { c: c.name.split(' - ')[0], pct };
+  });
+
+  const byStudent = {};
+  results.forEach(r => { if(r.ok) r.data.forEach(rec => {
+    (byStudent[rec.student_id] = byStudent[rec.student_id] || []).push(rec.marks / rec.max_marks * 100);
+  }); });
+  const top = Object.entries(byStudent).map(([sid, vals]) => {
+    const student = teacherRoster.find(s => s.dbId === Number(sid));
+    return { name: student ? student.name : `Student #${sid}`, pct: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) };
+  }).sort((a,b)=>b.pct-a.pct).slice(0,5);
+
+  perfCache = { byClass, top };
+  renderPage();
+}
+
+function teacherPage_perf(){
+  if(!perfCache){
+    loadPerfData();
+    return `<div class="page-head"><div><h2>Student Performance</h2><p>Real averages computed from saved marks.</p></div></div><div class="card"><p style="color:var(--slate-300);font-size:12px;">Loading…</p></div>`;
+  }
+  return `
+  <div class="page-head"><div><h2>Student Performance</h2><p>Real averages computed from marks you've saved, across all classes.</p></div></div>
+  <div class="cards-grid-2">
+    <div class="card">
+      <h3 class="card-title">Class Averages</h3>
+      ${perfCache.byClass.map(p=>`
+        <div class="perf-bar-row">
+          <span class="lbl">${p.c}</span>
+          <div class="perf-bar-track"><div class="perf-bar-fill" style="width:${p.pct||0}%"></div></div>
+          <span class="perf-bar-pct">${p.pct!=null ? p.pct+'%' : 'no data'}</span>
+        </div>`).join('')}
+      <p style="color:var(--slate-300);font-size:11.5px;margin-top:10px;">Averages are computed from every internal assessment mark saved for that class so far.</p>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Top Performers</h3>
+      ${perfCache.top.length ? perfCache.top.map((r,i)=>`<div class="exam-row"><span class="nm">${i+1}. ${r.name}</span><span class="dt mono">${r.pct}%</span></div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">No marks recorded yet.</p>'}
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   ADMIN PAGES
+========================================================= */
+function adminPage_dashboard(){
+  const pendingCount = adminFeedbackList.filter(f=>!f.resolved).length;
+  const stats = adminStats.map(s => {
+    if(s.lbl === 'Feedback pending'){
+      return Object.assign({}, s, {num:String(pendingCount), delta: pendingCount>0 ? 'needs review' : 'all clear', good: pendingCount===0});
+    }
+    if(s.lbl === 'Students') return Object.assign({}, s, {num:String(studentRecords.length), delta: studentRecords.length ? 'from live database' : 'loading…'});
+    if(s.lbl === 'Teachers') return Object.assign({}, s, {num:String(teacherRecords.length), delta: teacherRecords.length ? 'from live database' : 'loading…'});
+    if(s.lbl === 'Departments') return Object.assign({}, s, {num:String(departmentRecords.length), delta: departmentRecords.length ? 'from live database' : 'loading…'});
+    if(s.lbl === 'FAQs indexed') return Object.assign({}, s, {num:String(FAQ_DB.length), delta: FAQ_DB.length ? 'from live database' : 'loading…'});
+    if(s.lbl === 'Chatbot queries today' && chatStats) return Object.assign({}, s, {num:String(chatStats.today_queries), delta:`${chatStats.total_queries} total all-time`});
+    return s;
+  });
+  const usageByDay = chatStats ? chatStats.last_7_days.map(d=>({d: d.date.slice(5), v: d.count})) : [];
+  const maxUsage = usageByDay.length ? Math.max(1, ...usageByDay.map(u=>u.v)) : 1;
+  return `
+  <div class="grid-admin">
+    ${stats.map(s=>`
+      <div class="stat-tile">
+        <span class="icn">${ICONS[s.icon]||ICONS.stats}</span>
+        <span class="num">${s.num}</span>
+        <span class="lbl">${s.lbl}</span>
+        <span class="delta" style="color:${s.good?'var(--good)':'var(--warn)'}">${s.delta}</span>
+      </div>`).join('')}
+
+    <div class="card a-actions">
+      <h3 class="card-title">Administrative Actions</h3>
+      <div class="actions-grid">
+        ${adminActions.map(([icon,label,pageKey])=>`
+          <button class="action-tile" onclick="setActiveNav('${pageKey}')">
+            ${ICONS[icon]||ICONS.stats}
+            <span>${label}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="card a-usage" style="cursor:pointer;" onclick="setActiveNav('stats')">
+      <h3 class="card-title">Chatbot Usage — Last 7 Days</h3>
+      <div class="usage-bars">
+        ${usageByDay.length ? usageByDay.map(u=>`
+          <div class="usage-bar-col">
+            <div class="usage-bar" style="height:${Math.round(u.v/maxUsage*100)}%"></div>
+            <span>${u.d}</span>
+          </div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">Loading…</p>'}
+      </div>
+    </div>
+
+    <div class="card a-feedback" style="cursor:pointer;" onclick="setActiveNav('feedback')">
+      <h3 class="card-title">Recent Feedback <span class="pill pill-warn">${pendingCount} pending</span></h3>
+      ${adminFeedbackList.slice(0,4).map(f=>`
+        <div class="fb-row">
+          <span class="fb-stars">${'★'.repeat(f.stars)}${'☆'.repeat(5-f.stars)}</span>
+          <p><span class="who">${f.author_name}</span> — ${f.comment || '(no comment)'}</p>
+        </div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">No feedback yet.</p>'}
+    </div>
+  </div>`;
+}
+
+function adminPage_users(){
+  const tab = activeUserTab || 'student';
+  const tabBar = `
+  <div class="filter-tabs">
+    <button class="filter-tab ${tab==='student'?'active':''}" onclick="activeUserTab='student';renderPage();">Students (${studentRecords.length})</button>
+    <button class="filter-tab ${tab==='teacher'?'active':''}" onclick="activeUserTab='teacher';renderPage();">Teachers (${teacherRecords.length})</button>
+    <button class="filter-tab ${tab==='pendingAdmin'?'active':''}" onclick="activeUserTab='pendingAdmin';renderPage();">Pending Admins (${pendingAdmins.length})</button>
+  </div>`;
+
+  if(tab === 'pendingAdmin'){
+    return `
+    <div class="page-head"><div><h2>Manage Users</h2><p>Pending admin signup requests awaiting approval.</p></div></div>
+    ${tabBar}
+    <div class="card">
+      <table class="data-table">
+        <tr><th>ID</th><th>Name</th><th>Email</th><th></th></tr>
+        ${pendingAdmins.map((u)=>`
+          <tr><td class="mono">${u.id}</td><td>${u.name}</td><td class="mono">${u.email}</td>
+            <td style="white-space:nowrap;">
+              <button class="btn-primary" style="padding:4px 10px;font-size:11px;" onclick="approveAdmin(${u.dbId})">Approve</button>
+              <button class="btn-danger-sm" style="margin-left:6px;" onclick="rejectAdmin(${u.dbId})">Reject</button>
+            </td></tr>`).join('') || `<tr><td colspan="4" style="color:var(--slate-300);">No pending admin requests.</td></tr>`}
+      </table>
+    </div>`;
+  }
+
+  const list = tab==='student' ? studentRecords : teacherRecords;
+  return `
+  <div class="page-head">
+    <div><h2>Manage Users</h2><p>View, add, edit login credentials for, or remove student and teacher accounts. Live from ${API_BASE}.</p></div>
+    <button class="btn-primary" onclick="openAddUserModal('${tab}')">+ Add ${tab==='student'?'Student':'Teacher'}</button>
+  </div>
+  ${tabBar}
+  <div class="card">
+    <table class="data-table">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Username (Email)</th>
+        <th>${tab === 'student' ? 'Branch' : 'Department'}</th>
+        <th>${tab === 'student' ? 'Semester' : 'Designation'}</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+      ${list.map((u,i)=>`
+        <tr>
+          <td class="mono">${u.id}</td>
+          <td>${u.name}</td>
+          <td class="mono">${u.email}</td>
+          <td>${tab === 'student' ? (u.specialization || '—') : (u.dept || '—')}</td>
+          <td>${tab==='student'?u.sem:u.designation}</td>
+          <td><span class="pill ${u.status==='Active'?'pill-good':'pill-warn'}">${u.status}</span></td>
+          <td style="white-space:nowrap;">
+            <button class="btn-ghost-sm" onclick="openEditUserModal('${tab}',${i})">Edit</button>
+            <button class="btn-danger-sm" style="margin-left:6px;" onclick="confirmRemoveUser('${tab}',${i})">Remove</button>
+          </td>
+        </tr>`).join('') || `<tr><td colspan="7" style="color:var(--slate-300);">No ${tab==='student'?'students':'teachers'} yet — add one, or check the backend is running at ${API_BASE}.</td></tr>`}
+    </table>
+  </div>`;
+}
+
+function confirmRemoveUser(tab, i){
+  const list = tab === 'student' ? studentRecords : teacherRecords;
+  const u = list[i];
+  if(!u) return;
+  openModal(`Remove ${tab==='student'?'Student':'Teacher'}`, `
+    <p style="color:var(--slate-300);font-size:13px;line-height:1.6;margin:0;">
+      Are you sure you want to remove <b style="color:#fff;">${u.name}</b> (${u.id})? This deletes them from the database and cannot be undone.
+    </p>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button>
+     <button class="btn-danger-sm" style="padding:9px 15px;font-size:12.5px;" onclick="removeUser('${tab}',${i})">Yes, Remove</button>`
+  );
+}
+async function removeUser(tab, i){
+  const list = tab === 'student' ? studentRecords : teacherRecords;
+  const u = list[i];
+  if(!u) return;
+  const res = await apiRequest(`/users/${u.dbId}`, { method:'DELETE', headers: authHeaders() });
+  closeModal();
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  showToast(`${u.name} removed from ${tab==='student'?'students':'teachers'}.`);
+  await loadAdminData();
+  renderPage();
+}
+function openAddUserModal(tab){
+  const deptOptions = departmentRecords.length
+    ? departmentRecords.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')
+    : '<option value="">No departments yet — add one under Departments &amp; Courses first</option>';
+  openModal(`Add ${tab==='student'?'Student':'Teacher'}`, `
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input id="mName" type="text" placeholder="e.g. Kabir Malhotra"></div>
+      <div class="field"><label>Username (Email)</label><input id="mEmail" type="text" placeholder="name@${COLLEGE_EMAIL_DOMAIN}"></div>
+      <div class="field"><label>Temporary Password</label><input id="mPw" type="text" placeholder="Leave blank to auto-generate '${COLLEGE_SHORT}@123'"></div>
+      ${tab === 'teacher' ? `
+        <div class="field"><label>Department</label>
+          <select id="mDept">${deptOptions}</select>
+          <span style="display:block;font-size:10.5px;color:var(--slate);margin-top:5px;font-weight:400;text-transform:none;letter-spacing:0;">Pulled live from the database — add a new department there first if it's missing.</span>
+        </div>
+      ` : ''}
+      ${tab === 'student' ? `
+        <div class="field">
+          <label>Course</label>
+          <select id="mCourse">
+              <option value="B.Tech">B.Tech</option>
+              <option value="M.Tech">M.Tech</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Specialization / Branch</label>
+          <select id="mBranch"></select>
+        </div>
+
+        <div class="field">
+          <label>Semester</label>
+          <select id="mSemester">
+            <option value="1st">1st Semester</option>
+            <option value="2nd">2nd Semester</option>
+            <option value="3rd">3rd Semester</option>
+            <option value="4th">4th Semester</option>
+            <option value="5th">5th Semester</option>
+            <option value="6th">6th Semester</option>
+            <option value="7th">7th Semester</option>
+            <option value="8th">8th Semester</option>
+          </select>
+        </div>
+      ` : `
+          <div class="field">
+            <label>Designation</label>
+            <input id="mExtra" type="text"
+               placeholder="Assistant Professor">
+          </div>
+      `}
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitAddUser('${tab}')">Save</button>`
+  );
+  if (tab === 'student') updateStudentOptions('mCourse', 'mBranch', 'mSemester');
+}
+async function submitAddUser(tab){
+  const name = (document.getElementById('mName').value||'').trim() || 'New User';
+  const email = (document.getElementById('mEmail').value||'').trim().toLowerCase();
+  const pw = (document.getElementById('mPw').value||'').trim() || `${COLLEGE_SHORT}@123`;
+  const deptId = tab === 'teacher' ? parseInt(document.getElementById('mDept').value, 10) : null;
+  const extra = tab === 'student'
+    ? ''
+    : (document.getElementById('mExtra')?.value || '').trim() || 'Lecturer';
+
+  if(!email){ showToast('Please enter a username (email).', 'warn'); return; }
+  if(tab === 'teacher' && !deptId){ showToast('Please choose a department.', 'warn'); return; }
+
+  const payload = {
+    name,
+    email,
+    password: pw,
+    role: tab
+  };
+  if (tab === 'teacher') payload.department_id = deptId;
+
+  if (tab === 'student') {
+    payload.course = document.getElementById('mCourse').value;
+    payload.specialization = document.getElementById('mBranch').value;
+    payload.semester = document.getElementById('mSemester').value;
+  } else {
+    payload.designation = extra;
+  }
+
+
+  const res = await apiRequest('/users', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  closeModal();
+  activeUserTab = tab;
+  showToast(`${name} added — username: ${email}, password: ${pw}`);
+  await loadAdminData();
+  renderPage();
+}
+
+/* Admin-driven username / password change — PUTs straight to the database
+   via the user's real numeric dbId, so the change takes effect on that
+   person's very next login. */
+function openEditUserModal(tab, i){
+  const list = tab==='student' ? studentRecords : teacherRecords;
+  const u = list[i];
+  if(!u) return;
+  const deptOptions = departmentRecords.map(d=>`<option value="${d.id}" ${d.name===u.dept?'selected':''}>${d.name}</option>`).join('');
+  openModal(`Edit ${tab==='student'?'Student':'Teacher'} — ${u.name}`, `
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input id="eName" type="text" value="${u.name}"></div>
+      <div class="field"><label>Username (Email)</label><input id="eEmail" type="text" value="${u.email}"></div>
+      <div class="field"><label>New Password</label><input id="ePw" type="text" placeholder="Leave blank to keep current password"></div>
+      ${tab === 'teacher' ? `<div class="field"><label>Department</label><select id="eDept">${deptOptions}</select></div>` : ''}
+      ${tab === 'student' ? `
+          <div class="field">
+              <label>Course</label>
+              <select id="eCourse">
+                  <option value="B.Tech" ${u.course === 'B.Tech' ? 'selected' : ''}>B.Tech</option>
+                  <option value="M.Tech" ${u.course === 'M.Tech' ? 'selected' : ''}>M.Tech</option>
+              </select>
+          </div>
+
+          <div class="field">
+              <label>Specialization / Branch</label>
+              <select id="eBranch">
+                  ${(PROGRAMS[u.course] || PROGRAMS['B.Tech']).branches
+                      .map(b => `<option value="${b}" ${u.specialization === b ? 'selected' : ''}>${b}</option>`)
+                      .join('')}
+              </select>
+          </div>
+
+          <div class="field">
+              <label>Semester</label>
+              <select id="eSemester">
+                  ${Array.from(
+                      {length: u.course === 'M.Tech' ? 4 : 8},
+                      (_, i) => {
+                          const n = i + 1;
+                          const suffix = n === 1 ? 'st' :
+                                        n === 2 ? 'nd' :
+                                        n === 3 ? 'rd' : 'th';
+                          const value = `${n}${suffix}`;
+                          return `<option value="${value}" ${u.sem === value ? 'selected' : ''}>${value} Semester</option>`;
+                      }
+                  ).join('')}
+              </select>
+          </div>
+      ` : `
+          <div class="field">
+              <label>Designation</label>
+              <input id="eExtra" type="text"
+                    value="${u.designation || ''}">
+          </div>
+      `}
+      <div class="field"><label>Status</label>
+        <select id="eStatus">
+          <option ${u.status==='Active'?'selected':''}>Active</option>
+          <option ${u.status==='On Leave'?'selected':''}>On Leave</option>
+        </select>
+      </div>
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitEditUser('${tab}',${i})">Save Changes</button>`
+  );
+}
+async function submitEditUser(tab, i){
+  const list = tab==='student' ? studentRecords : teacherRecords;
+  const u = list[i];
+  if(!u) return;
+
+  const name = (document.getElementById('eName').value||'').trim() || u.name;
+  const email = (document.getElementById('eEmail').value||'').trim().toLowerCase() || u.email;
+  const pw = (document.getElementById('ePw').value||'').trim();
+  const deptId = tab === 'teacher' ? parseInt(document.getElementById('eDept').value, 10) : null;
+  let extra = '';
+  if (tab === 'student') {
+      extra = document.getElementById('eSemester').value;
+  } else {
+      extra = (document.getElementById('eExtra').value || '').trim();
+  }
+  const status = document.getElementById('eStatus').value;
+
+  const payload = { name, email, status };
+  if (tab === 'teacher') payload.department_id = deptId;
+  if(pw) payload.password = pw;
+  if (tab === 'student') {
+    payload.course = document.getElementById('eCourse').value;
+    payload.specialization = document.getElementById('eBranch').value;
+    payload.semester = extra;
+  } else {
+      payload.designation = extra;
+  }
+
+  const res = await apiRequest(`/users/${u.dbId}`, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  closeModal();
+  showToast(`${name}'s account updated${pw ? ' — password changed' : ''}.`);
+  await loadAdminData();
+  renderPage();
+}
+
+function adminPage_dept(){
+  return `
+  <div class="page-head">
+    <div><h2>Departments &amp; Courses</h2><p>${departmentRecords.length} departments across the college. Live from ${API_BASE}.</p></div>
+    <button class="btn-primary" onclick="openAddDeptModal()">+ Add Department</button>
+  </div>
+  <div class="cards-grid-3">
+    ${departmentRecords.map(d=>`
+      <div class="card">
+        <h3 class="card-title">${d.name}</h3>
+        <div class="kv-list">
+          <div class="kv-row"><span>Head of Dept.</span><b>${d.hod}</b></div>
+          <div class="kv-row"><span>Students</span><b>${d.students}</b></div>
+          <div class="kv-row"><span>Courses offered</span><b>${d.courses}</b></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn-ghost" onclick="openEditDeptModal(${d.id})">
+        Edit
+        </button>
+        <button class="btn-danger-sm" onclick="confirmDeleteDepartment(${d.id})">
+        Delete
+        </button>
+        </div>
+
+      </div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">No departments yet — add one, or check the backend is running.</p>'}
+  </div>`;
+}
+function openAddDeptModal(){
+  openModal('Add Department', `
+    <div class="form-grid">
+      <div class="field"><label>Department Name</label><input id="dName" type="text" placeholder="e.g. Artificial Intelligence"></div>
+      <div class="field"><label>Head of Department</label><input id="dHod" type="text" placeholder="Dr. ..."></div>
+      <div class="field"><label>Number of Courses</label><input id="dCourses" type="number" placeholder="6"></div>
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitAddDept()">Save</button>`
+  );
+}
+async function submitAddDept(){
+  const name = (document.getElementById('dName').value||'').trim();
+  const hod = (document.getElementById('dHod').value||'').trim() || 'TBD';
+  const courses = parseInt(document.getElementById('dCourses').value) || 4;
+  if(!name){ showToast('Please enter a department name.', 'warn'); return; }
+
+  const res = await apiRequest('/departments', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ name, hod, courses }),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  closeModal();
+  showToast(`${name} department added.`);
+  await loadAdminData();
+  renderPage();
+}
+function openEditDeptModal(dbId){
+  const d = departmentRecords.find(x=>x.id===dbId);
+  if(!d) return;
+  openModal(`Edit ${d.name}`, `
+    <div class="form-grid">
+      <div class="field"><label>Department Name</label><input id="edName" type="text" value="${d.name}"></div>
+      <div class="field"><label>Head of Department</label><input id="edHod" type="text" value="${d.hod}"></div>
+      <div class="field"><label>Number of Courses</label><input id="edCourses" type="number" value="${d.courses}"></div>
+      <p style="font-size:10.5px;color:var(--slate);margin:0;">Student count updates automatically based on who's assigned to this department under Manage Users — it isn't set here.</p>
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitEditDept(${dbId})">Save Changes</button>`
+  );
+}
+async function submitEditDept(dbId){
+  const name = (document.getElementById('edName').value||'').trim();
+  const hod = (document.getElementById('edHod').value||'').trim();
+  const courses = parseInt(document.getElementById('edCourses').value);
+  if(!name){ showToast('Please enter a department name.', 'warn'); return; }
+
+  const res = await apiRequest(`/departments/${dbId}`, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ name, hod, courses: isNaN(courses) ? undefined : courses }),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  closeModal();
+  showToast(`${name} updated.`);
+  await loadAdminData();
+  renderPage();
+}
+
+function confirmDeleteDepartment(id) {
+    openModal(
+        'Delete Department',
+        '<p>Are you sure you want to delete this department? ' +
+        'This action cannot be undone.</p>',
+        `<button class="btn-ghost"
+            onclick="closeModal()">Cancel</button>
+         <button class="btn-danger-sm"
+            onclick="deleteDepartment(${id})">
+            Yes, Delete
+         </button>`
+    );
+}
+
+async function deleteDepartment(id) {
+    const res = await apiRequest(
+        `/departments/${id}`,
+        {
+            method: 'DELETE',
+            headers: authHeaders()
+        }
+    );
+
+    if (!res.ok) {
+        showToast(res.error, 'warn');
+        return;
+    }
+
+    closeModal();
+    showToast('Department deleted.');
+
+    await loadAdminData();
+    renderPage();
+}
+
+let faqSearch = '';
+function adminPage_faq(){
+  const q = faqSearch.toLowerCase();
+  const filtered = FAQ_DB.filter(f => f.question.toLowerCase().includes(q) || f.answer.toLowerCase().includes(q));
+  return `
+  <div class="page-head">
+    <div><h2>FAQ Manager</h2><p>${FAQ_DB.length} entries in the semantic knowledge base. Live from ${API_BASE} — ${COLLEGE_SHORT} AI can answer any of these immediately.</p></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-ghost" onclick="setActiveNav('import')">Import CSV</button>
+      <button class="btn-primary" onclick="openAddFaqModal()">+ Add FAQ</button>
+      <button class="btn-ghost" onclick="exportFaqDataset()">Export CSV</button>
+    </div>
+  </div>
+  <input class="select-input" style="width:100%;max-width:420px;margin-bottom:14px;" placeholder="Search FAQs..." oninput="faqSearch=this.value; renderPage();" value="${faqSearch}">
+  <div class="card">
+    ${filtered.map(f=>`
+      <div class="faq-row">
+        <div style="display:flex;gap:10px;flex:1;">
+          ${f.image_url ? `<img src="${API_BASE}${f.image_url}" alt="${f.image_alt||''}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid rgba(255,255,255,0.1);" onerror="this.style.display='none'">` : ''}
+          <div>
+            <p class="faq-q">${f.question}${f.category?` <span class="pill pill-blue" style="margin-left:4px;">${f.category}</span>`:''}</p>
+            <p class="faq-a">${f.answer}</p>
+          </div>
+        </div>
+        <button class="btn-danger-sm" onclick="removeFaq(${f.dbId})">Delete</button>
+      </div>`).join('') || `<p style="color:var(--slate-300);font-size:12px;">${FAQ_DB.length===0 ? `No FAQs loaded yet — check the backend is running at ${API_BASE}, or add one below.` : 'No FAQs match your search.'}</p>`}
+  </div>`;
+}
+async function removeFaq(dbId){
+  const res = await apiRequest(`/faq/${dbId}`, { method:'DELETE', headers: authHeaders() });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  showToast('FAQ removed from knowledge base.');
+  await loadFaqData();
+  renderPage();
+}
+function openAddFaqModal(){
+  openModal('Add FAQ Entry', `
+    <div class="form-grid">
+      <div class="field"><label>Question (natural phrasing)</label><input id="fQ" type="text" placeholder="e.g. how do I apply for a bonafide certificate"></div>
+      <div class="field"><label>Answer</label><input id="fA" type="text" placeholder="Answer shown to students..."></div>
+      <div class="field"><label>Category (optional)</label><input id="fCat" type="text" placeholder="e.g. Fees, Admission, Courses"></div>
+      <div class="field"><label>Image URL (optional)</label><input id="fImg" type="text" placeholder="/images/example.png — for questions needing a visual"></div>
+      <div class="field"><label>Image Alt Text (optional)</label><input id="fAlt" type="text" placeholder="Short description of the image"></div>
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitAddFaq()">Save to Knowledge Base</button>`
+  );
+}
+async function submitAddFaq(){
+  const question = (document.getElementById('fQ').value||'').trim();
+  const answer = (document.getElementById('fA').value||'').trim();
+  const category = (document.getElementById('fCat').value||'').trim();
+  const image_url = (document.getElementById('fImg').value||'').trim();
+  const image_alt = (document.getElementById('fAlt').value||'').trim();
+  if(!question || !answer){ showToast('Please fill in both the question and answer.','warn'); return; }
+
+  const res = await apiRequest('/faq', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      question, answer,
+      category: category || null,
+      image_url: image_url || null,
+      image_alt: image_alt || null,
+    }),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  closeModal();
+  showToast(`FAQ added — ${COLLEGE_SHORT} AI can answer it immediately.`);
+  await loadFaqData();
+  renderPage();
+}
+
+async function exportFaqDataset() {
+    try {
+        const response = await fetch(
+            API_BASE + '/faq/export',
+            {
+                headers: authHeaders()
+            }
+        );
+
+        if (!response.ok) {
+            showToast(
+                'FAQ export failed. Check your admin access.',
+                'warn'
+            );
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'orbit_faqs.csv';
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        URL.revokeObjectURL(url);
+
+        showToast('FAQ dataset exported successfully.');
+    } catch (error) {
+        showToast(
+            'Could not export FAQs. Check the backend.',
+            'warn'
+        );
+    }
+}
+
+let pendingImportFile = null;
+
+function adminPage_import(){
+  return `
+  <div class="page-head"><div><h2>Import FAQ Dataset</h2><p>Bulk-add FAQ entries from a CSV file. Supports Question, Answer, Category, Image, Image_Alt columns (Category/Image/Image_Alt are optional) — parsed and de-duplicated server-side, then written straight into orbit.db.</p></div></div>
+  <div class="card" style="max-width:640px;">
+    <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+      ${ICONS.import}
+      <p><b>Click to browse</b> or drag a CSV file here</p>
+      <span class="mono" style="font-size:10.5px;color:var(--slate-300);">question,answer,category,image,image_alt</span>
+    </div>
+    <input type="file" id="fileInput" accept=".csv" style="display:none;" onchange="handleFileSelect(this)">
+    <div id="importPreview"></div>
+    <button class="btn-primary" style="margin-top:14px;" onclick="confirmImport()" id="importBtn" ${pendingImportFile ? '' : 'disabled'}>Import into Knowledge Base</button>
+    <p style="color:var(--slate-300);font-size:11px;margin-top:10px;">${FAQ_DB.length} total in knowledge base right now.</p>
+  </div>`;
+}
+function handleFileSelect(input){
+  const file = input.files[0];
+  pendingImportFile = file || null;
+  const prev = document.getElementById('importPreview');
+  if(prev) prev.innerHTML = file
+    ? `<p style="color:var(--good);font-size:12px;margin-top:10px;">Selected: ${file.name} — click "Import into Knowledge Base" to upload.</p>`
+    : '';
+  const btn = document.getElementById('importBtn');
+  if(btn) btn.disabled = !pendingImportFile;
+}
+async function confirmImport(){
+  if(!pendingImportFile) return;
+  const btn = document.getElementById('importBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Importing…'; }
+
+  const formData = new FormData();
+  formData.append('file', pendingImportFile);
+
+  const res = await apiRequest('/faq/bulk', {
+    method: 'POST',
+    headers: authHeaders(), // no Content-Type — the browser sets the multipart boundary itself
+    body: formData,
+  });
+
+  if(btn){ btn.disabled = false; btn.textContent = 'Import into Knowledge Base'; }
+
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  const { inserted, updated, total_in_file } = res.data;
+  showToast(`Imported ${total_in_file} rows from the CSV — ${inserted} new, ${updated} updated.`);
+  pendingImportFile = null;
+  await loadFaqData();
+  renderPage();
+}
+
+const REPORT_TYPES = [
+  {key:'attendance', label:'Attendance Summary', desc:'Department-wise attendance percentages for the current month.'},
+  {key:'fees', label:'Fee Collection Report', desc:'Total collected vs pending fees across all departments.'},
+  {key:'placement', label:'Placement Report', desc:'Company-wise placement statistics for this academic year.'},
+  {key:'performance', label:'Academic Performance', desc:'Average CGPA and pass percentage by department.'},
+  {key:'chatbot', label:'Chatbot Usage Report', desc:'Query volume and resolution rate for the last 7 days.'},
+];
+function adminPage_reports(){
+  return `
+  <div class="page-head"><div><h2>Reports</h2><p>Generate and download system reports as CSV.</p></div></div>
+  <div class="cards-grid-2">
+    ${REPORT_TYPES.map(r=>`
+      <div class="card">
+        <h3 class="card-title">${r.label}</h3>
+        <p style="color:var(--slate-300);font-size:12px;line-height:1.5;flex:1;">${r.desc}</p>
+        <button class="btn-primary" style="margin-top:10px;" onclick="generateReport('${r.key}')">Generate &amp; Download CSV</button>
+      </div>`).join('')}
+  </div>`;
+}
+
+async function downloadStudentReport(path){
+  const res = await fetch(API_BASE + path, { headers: authHeaders() });
+  if(!res.ok){ showToast('Download failed.', 'warn'); return; }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'student_report.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function generateReport(key){
+  let rows = [];
+  if(key==='attendance') rows = [['Department','Attendance %'], ...departmentRecords.map(d=>[d.name, (75+Math.random()*20).toFixed(1)])];
+  else if(key==='fees') rows = [['Department','Collected (Rs)','Pending (Rs)'], ...departmentRecords.map(d=>[d.name, Math.floor(d.students*60000*0.7), Math.floor(d.students*60000*0.3)])];
+  else if(key==='placement') rows = [['Company','Offers'], ['TCS',42],['Infosys',31],['Amazon',12],['Core Engineering Firms',27]];
+  else if(key==='performance') rows = [['Department','Avg CGPA','Pass %'], ...departmentRecords.map(d=>[d.name,(7.5+Math.random()*1.4).toFixed(2), (85+Math.random()*12).toFixed(1)])];
+  else rows = [['Day','Queries','Resolved %'], ...usageByDay.map(u=>[u.d, u.v, (78+Math.random()*15).toFixed(1)])];
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `orbit-${key}-report.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Report generated and downloaded.');
+}
+
+let adminAttendanceCache = null; // [{name, pct, below75, total}] per department, or null = not loaded yet
+async function loadAdminAttendanceOverview(){
+  const res = await apiRequest('/attendance', { headers: authHeaders() });
+  if(!res.ok){ adminAttendanceCache = []; showToast(res.error, 'warn'); renderPage(); return; }
+  const byStudent = {};
+  res.data.forEach(r => {
+    byStudent[r.student_id] = byStudent[r.student_id] || { present:0, total:0 };
+    byStudent[r.student_id].total++;
+    if(r.present) byStudent[r.student_id].present++;
+  });
+  adminAttendanceCache = departmentRecords.map(d => {
+    const studentsInDept = studentRecords.filter(s => s.dept === d.name);
+    const withData = studentsInDept.filter(s => byStudent[s.dbId]);
+    if(!withData.length) return { name:d.name, pct:null, below75:0, total:studentsInDept.length };
+    const pcts = withData.map(s => byStudent[s.dbId].present / byStudent[s.dbId].total * 100);
+    return {
+      name: d.name,
+      pct: Math.round(pcts.reduce((a,b)=>a+b,0) / pcts.length),
+      below75: pcts.filter(p=>p<75).length,
+      total: studentsInDept.length,
+    };
+  });
+  renderPage();
+}
+function adminPage_attendance(){
+  if(adminAttendanceCache === null){
+    loadAdminAttendanceOverview();
+    return `<div class="page-head"><div><h2>Manage Attendance</h2><p>Real department-wise attendance, computed from every record saved by teachers.</p></div></div><div class="card"><p style="color:var(--slate-300);font-size:12px;">Loading…</p></div>`;
+  }
+  return `
+  <div class="page-head"><div><h2>Manage Attendance</h2><p>Real department-wise attendance, computed from every record saved by teachers.</p></div></div>
+  <div class="card">
+    <table class="data-table">
+      <tr><th>Department</th><th>Avg Attendance</th><th>Below 75%</th><th>Status</th></tr>
+      ${adminAttendanceCache.map(d => `
+        <tr><td>${d.name}</td>
+          <td class="mono">${d.pct!=null ? d.pct+'%' : 'no data'}</td>
+          <td class="mono">${d.below75} of ${d.total} students</td>
+          <td><span class="pill ${d.pct==null ? 'pill-blue' : d.pct>=80?'pill-good':'pill-warn'}">${d.pct==null ? 'No data yet' : d.pct>=80?'Healthy':'Monitor'}</span></td>
+        </tr>`).join('') || '<tr><td colspan="4" style="color:var(--slate-300);">No departments yet.</td></tr>'}
+    </table>
+  </div>`;
+}
+
+let adminMarksCache = null; // [{name, avgPct, recorded, total}] per department, or null = not loaded yet
+async function loadAdminMarksOverview(){
+  const res = await apiRequest('/marks', { headers: authHeaders() });
+  if(!res.ok){ adminMarksCache = []; showToast(res.error, 'warn'); renderPage(); return; }
+  const byStudent = {};
+  res.data.forEach(r => { (byStudent[r.student_id] = byStudent[r.student_id] || []).push(r.marks / r.max_marks * 100); });
+  adminMarksCache = departmentRecords.map(d => {
+    const studentsInDept = studentRecords.filter(s => s.dept === d.name);
+    const withData = studentsInDept.filter(s => byStudent[s.dbId]);
+    if(!withData.length) return { name:d.name, avgPct:null, recorded:0, total:studentsInDept.length };
+    const allPcts = withData.flatMap(s => byStudent[s.dbId]);
+    return { name:d.name, avgPct:(allPcts.reduce((a,b)=>a+b,0)/allPcts.length).toFixed(1), recorded:withData.length, total:studentsInDept.length };
+  });
+  renderPage();
+}
+function adminPage_marks(){
+  if(adminMarksCache === null){
+    loadAdminMarksOverview();
+    return `<div class="page-head"><div><h2>Manage Marks</h2><p>Real average scores, computed from every mark saved by teachers.</p></div></div><div class="card"><p style="color:var(--slate-300);font-size:12px;">Loading…</p></div>`;
+  }
+  return `
+  <div class="page-head"><div><h2>Manage Marks</h2><p>Real average scores, computed from every mark saved by teachers.</p></div></div>
+  <div class="card">
+    <table class="data-table">
+      <tr><th>Department</th><th>Avg Score</th><th>Students with Marks</th><th>Status</th></tr>
+      ${adminMarksCache.map(d => `
+        <tr><td>${d.name}</td>
+          <td class="mono">${d.avgPct!=null ? d.avgPct+'%' : 'no data'}</td>
+          <td class="mono">${d.recorded} of ${d.total}</td>
+          <td><span class="pill ${d.recorded===d.total && d.total>0 ?'pill-good':'pill-warn'}">${d.recorded===d.total && d.total>0 ?'Complete':'Pending'}</span></td>
+        </tr>`).join('') || '<tr><td colspan="4" style="color:var(--slate-300);">No departments yet.</td></tr>'}
+    </table>
+  </div>`;
+}
+
+function adminPage_announce(){
+  return `
+  <div class="page-head"><div><h2>Publish Announcement</h2><p>Create a new notice — it's saved to the database and appears instantly on every dashboard.</p></div></div>
+  <div class="cards-grid-2">
+    <div class="card">
+      <h3 class="card-title">New Announcement</h3>
+      <div class="field"><label>Title</label><input id="anTitle" type="text" placeholder="e.g. Library closed for maintenance"></div>
+      <div class="field"><label>Category</label>
+        <select class="select-input" id="anTag" style="width:100%;">
+          <option>General</option><option>Examinations</option><option>Placements</option><option>Hostel</option><option>Library</option><option>Department</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="publishAnnouncement()">Publish Announcement</button>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Recently Published</h3>
+      ${announcementsList.slice(0,5).map(a=>`
+        <div class="announce-item"><span class="tag">${a.tag}</span><div class="ttl">${a.title}</div><div class="dt">${formatDateNice(a.created_at)}</div></div>`).join('') || '<p style="color:var(--slate-300);font-size:12px;">Nothing published yet.</p>'}
+    </div>
+  </div>`;
+}
+async function publishAnnouncement(){
+  const title = (document.getElementById('anTitle').value||'').trim();
+  const tag = document.getElementById('anTag').value;
+  if(!title){ showToast('Please enter a title.','warn'); return; }
+
+  const res = await apiRequest('/announcements', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ tag, title }),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+
+  showToast('Announcement published to all dashboards.');
+  document.getElementById('anTitle').value = '';
+  await loadAnnouncements();
+  renderPage();
+}
+
+function adminPage_reset(){
+  return `
+  <div class="page-head"><div><h2>Reset Passwords</h2><p>Search for a user and generate a new temporary password for their account.</p></div></div>
+  <input class="select-input" style="width:100%;max-width:420px;margin-bottom:14px;" placeholder="Search by name or email..." oninput="renderResetList(this.value)">
+  <div class="card" id="resetListCard">
+    ${buildResetRows([...studentRecords.map(u=>({u,tab:'student'})), ...teacherRecords.map(u=>({u,tab:'teacher'}))].slice(0,8))}
+  </div>`;
+}
+function buildResetRows(entries){
+  if(!entries.length) return '<p style="color:var(--slate-300);font-size:12px;">No users found.</p>';
+  return entries.map(({u,tab})=>`
+    <div class="upload-row">
+      <span class="nm">${u.name} <span style="color:var(--slate-300);font-weight:400;">— ${u.email}</span></span>
+      <button class="btn-ghost-sm" onclick="sendReset('${tab}',${u.dbId})">Generate New Password</button>
+    </div>`).join('');
+}
+function renderResetList(query){
+  const q = query.toLowerCase();
+  const entries = [...studentRecords.map(u=>({u,tab:'student'})), ...teacherRecords.map(u=>({u,tab:'teacher'}))]
+    .filter(({u})=>u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+  const card = document.getElementById('resetListCard');
+  if(!card) return;
+  card.innerHTML = buildResetRows(entries.slice(0,8));
+}
+function sendReset(tab, dbId){
+  const list = tab==='student' ? studentRecords : teacherRecords;
+  const u = list.find(x=>x.dbId===dbId);
+  if(!u) return;
+  const tempPw = 'Reset' + Math.floor(1000 + Math.random()*9000) + '!';
+  (async ()=>{
+    const res = await apiRequest(`/users/${dbId}`, {
+      method: 'PUT',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ password: tempPw }),
+    });
+    if(!res.ok){ showToast(res.error, 'warn'); return; }
+    showToast(`New password for ${u.name}: ${tempPw} — share this with them securely.`);
+  })();
+}
+
+function adminPage_stats(){
+  if(chatStats === null){
+    loadChatStats();
+    return `<div class="page-head"><div><h2>Chatbot Usage Stats</h2><p>Real semantic-search performance and query trends.</p></div></div><div class="card"><p style="color:var(--slate-300);font-size:12px;">Loading…</p></div>`;
+  }
+  const usageByDay = chatStats.last_7_days.map(d=>({d: d.date.slice(5), v: d.count}));
+  const maxUsage = Math.max(1, ...usageByDay.map(u=>u.v));
+  return `
+  <div class="page-head"><div><h2>Chatbot Usage Stats</h2><p>Real semantic-search performance and query trends — ${chatStats.total_queries} queries all-time, ${chatStats.today_queries} today.</p></div></div>
+  <div class="cards-grid-2">
+    <div class="card">
+      <h3 class="card-title">Queries — Last 7 Days</h3>
+      <div class="usage-bars" style="height:120px;">
+        ${usageByDay.map(u=>`<div class="usage-bar-col"><div class="usage-bar" style="height:${Math.round(u.v/maxUsage*100)}%"></div><span>${u.d}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Recent Queries (All Users) <button class="btn-ghost-sm" style="float:right;" onclick="chatStats=null; renderPage();">Refresh</button></h3>
+      ${sessionQueries.length ? sessionQueries.map(q=>`
+        <div class="upload-row"><span class="nm">${q.asked_by ? `<b>${q.asked_by}:</b> ` : ''}${q.query_text || q.text}</span><span class="meta pill ${q.matched?'pill-good':'pill-bad'}">${q.matched?'Matched':'Unmatched'}</span></div>
+      `).join('') : '<p style="color:var(--slate-300);font-size:12px;">No chatbot queries yet — ask ${COLLEGE_SHORT} AI something to see it logged here.</p>'}
+    </div>
+  </div>`;
+}
+
+function adminPage_feedback(){
+  const pending = adminFeedbackList.filter(f=>!f.resolved);
+  const resolved = adminFeedbackList.filter(f=>f.resolved);
+  return `
+  <div class="page-head"><div><h2>Review Feedback</h2><p>${pending.length} items pending review, ${resolved.length} resolved.</p></div></div>
+  <div class="card">
+    ${adminFeedbackList.length ? adminFeedbackList.map((f)=>`
+      <div class="fb-row" style="align-items:center;">
+        <span class="fb-stars">${'★'.repeat(f.stars)}${'☆'.repeat(5-f.stars)}</span>
+        <p style="flex:1;"><span class="who">${f.author_name}</span> — ${f.comment || '(no comment)'} <span style="color:var(--slate-300);font-size:10px;">· ${formatDateNice(f.created_at)}</span></p>
+        ${f.resolved ? '<span class="pill pill-good">Resolved</span>' : `<button class="btn-ghost-sm" onclick="resolveFeedback(${f.id})">Mark Resolved</button>`}
+      </div>`).join('') : '<p style="color:var(--slate-300);font-size:12px;">No feedback submitted yet.</p>'}
+  </div>`;
+}
+async function resolveFeedback(id){
+  const res = await apiRequest(`/feedback/${id}/resolve`, { method:'PUT', headers: authHeaders() });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  showToast('Feedback marked as resolved.');
+  await loadAdminFeedback();
+  renderPage();
+}
+
+/* ---------------- CHATBOT ---------------- */
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  if(chatOpen) document.getElementById('chatInput').focus();
+}
+function openChat(prefill){
+  chatOpen = true;
+  document.getElementById('chatPanel').classList.add('open');
+  if(prefill){ document.getElementById('chatInput').value = prefill; }
+  document.getElementById('chatInput').focus();
+}
+
+const SUGGESTIONS = [
+  "What's my attendance requirement?",
+  "When is the fee due date?",
+  "Exam schedule this week?",
+  "Hostel mess timings?",
+];
+
+function seedChat(){
+  const body = document.getElementById('chatBody');
+  body.innerHTML = '';
+  document.getElementById('chatUploadBtn').style.display = (currentRole === 'student') ? 'none' : 'flex'; // only teacher/admin can upload sheets
+  addBotMessage(`Hi ${getActiveProfile().name.split(' ')[0]}! I'm ${COLLEGE_SHORT} AI. Ask me anything about admissions, fees, attendance, exams, hostel, library or placements — I search the FAQ knowledge base semantically, so you don't need exact wording. Anything outside that, I'll chat normally too.`);
+  const row = document.getElementById('suggestRow');
+  row.innerHTML = SUGGESTIONS.map(s=>`<button class="suggest-chip" onclick="askSuggested(this)">${s}</button>`).join('');
+}
+function askSuggested(btn){
+  document.getElementById('chatInput').value = btn.textContent;
+  sendChat();
+}
+
+async function handleChatImageUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  input.value = '';
+  addUserMessage(`📎 Uploaded: ${file.name}`);
+  addTyping();
+
+  const formData = new FormData();
+  formData.append('file', file);
+  const clsName = (teacherClasses[selectedClassIdx] && teacherClasses[selectedClassIdx].name) || 'General';
+
+  const res = await apiRequest(`/ocr/attendance-sheet?class_name=${encodeURIComponent(clsName)}`, {
+    method: 'POST', headers: authHeaders(), body: formData,
+  });
+  removeTyping();
+
+  if(!res.ok){ addBotMessage(`Couldn't read that image (${res.error}). Try a clearer photo in block letters.`); return; }
+
+  const rows = res.data.rows || [];
+  window._pendingOcrRows = rows;
+  window._pendingOcrClass = res.data.class_name;
+  const matchedCount = rows.filter(r=>r.matched_student_id).length;
+  const preview = rows.map(r => `${r.matched_student_name || '❓ '+r.raw_text} — ${r.present ? 'Present' : 'Absent'}`).join('<br>');
+  addBotMessage(`I read ${rows.length} row(s), matched ${matchedCount} student(s):<br><br>${preview}<br><br>
+    <button class="btn-primary" style="margin-top:8px;" onclick="confirmOcrAttendance()">✓ Confirm &amp; Save to Attendance</button>`);
+}
+async function confirmOcrAttendance(){
+  const res = await apiRequest('/ocr/attendance-sheet/commit', {
+    method:'POST', headers: authHeaders({'Content-Type':'application/json'}),
+    body: JSON.stringify({ class_name: window._pendingOcrClass, rows: window._pendingOcrRows }),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  showToast('Attendance saved from uploaded sheet.');
+  todayAttendanceStats = null;
+}
+
+function openAdminSignup(){
+  openModal('Admin Signup', `
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input id="suName" type="text"></div>
+      <div class="field"><label>Email</label><input id="suEmail" type="text"></div>
+      <div class="field"><label>Password</label><input id="suPw" type="password"></div>
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitAdminSignup()">Request Access</button>`);
+}
+async function submitAdminSignup(){
+  const res = await apiRequest('/auth/signup-admin', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name: document.getElementById('suName').value, email: document.getElementById('suEmail').value, password: document.getElementById('suPw').value})});
+  closeModal();
+  showToast(res.ok ? 'Request submitted — wait for approval.' : res.error, res.ok ? undefined : 'warn');
+}
+
+function addUserMessage(text){
+  const body = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = 'msg msg-user';
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function addBotMessage(text, scorePct, imageUrl, imageAlt, sourceQuery, source, downloadUrl){
+  const body = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = 'msg msg-bot';
+
+  const dlBtn = downloadUrl
+  ? `<button class="btn-ghost-sm" style="margin-top:6px;" onclick="downloadStudentReport('${downloadUrl}')">⬇ Download Report</button>`
+  : '';
+  const imgHtml = imageUrl
+    ? `<img src="${API_BASE}${imageUrl}" alt="${imageAlt || 'FAQ reference image'}" style="display:block;max-width:100%;border-radius:10px;margin-top:8px;" onerror="this.style.display='none'">`
+    : '';
+  const safeQuery = (sourceQuery||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  const badge = source === 'llm'
+    ? `<span class="match-score" style="background:rgba(157,192,255,0.18);">general chat</span>`
+    : (scorePct!=null ? `<span class="match-score">match ${scorePct}%</span>` : '');
+  div.innerHTML = text + imgHtml + dlBtn + ((scorePct!=null || source==='llm') ? `
+    <div class="msg-meta">
+      ${badge}
+      <span class="fb-btns"><button title="Helpful" onclick="quickFeedback(this,5,'${safeQuery}')">👍</button><button title="Not helpful" onclick="quickFeedback(this,2,'${safeQuery}')">👎</button></span>
+    </div>` : '');
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+/* Thumbs up/down submit a real (lightweight) feedback record immediately —
+   no separate form needed for a quick reaction. */
+async function quickFeedback(btn, stars, sourceQuery){
+  const msgEl = btn.closest('.msg-bot');
+  msgEl.style.borderLeft = stars>=4 ? '2px solid var(--good)' : '2px solid var(--bad)';
+  const res = await apiRequest('/feedback', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ stars, comment: sourceQuery ? `Re: "${sourceQuery}"` : null }),
+  });
+  if(res.ok) showToast('Thanks — feedback recorded.');
+}
+function addTyping(){
+  const body = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = 'msg msg-bot';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function removeTyping(){
+  const t = document.getElementById('typingIndicator');
+  if(t) t.remove();
+}
+
+/* Real retrieval: posts the query to the backend's embeddings + FAISS
+   endpoint (app/routers/chatbot.py). If no confident FAQ match is found,
+   the backend itself falls back to a local LM Studio LLM (if running) for
+   general conversation — so a query either comes back as a grounded FAQ
+   answer (source: "faq") or a general chat reply (source: "llm"). Requires
+   auth (the backend logs every exchange against the logged-in user for
+   real chat history/stats), so this must send the auth token. */
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  addUserMessage(text);
+  input.value = '';
+  addTyping();
+
+  const res = await apiRequest('/chatbot/ask', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ query: text }),
+  });
+
+  removeTyping();
+
+  if(!res.ok){
+    sessionQueries.push({text, matched:false});
+    addBotMessage(`I couldn't reach the ${COLLEGE_SHORT} knowledge base (${res.error}). Please check the backend is running and try again.`);
+    return;
+  }
+
+  const { answer, score, image_url, image_alt, source, download_url } = res.data;
+  const matched = !!answer;
+  sessionQueries.push({text, matched});
+
+  if(matched){
+    const scorePct = source === 'llm' ? null : Math.min(99, Math.round(score*100));
+    addBotMessage(answer, scorePct, image_url, image_alt, text, source, download_url);
+  } else {
+    addBotMessage(`I couldn't find a confident match for that in the knowledge base, and the local AI chat model isn't reachable right now either. Could you rephrase, or reach out to the college administration at admin@${COLLEGE_EMAIL_DOMAIN}? I've logged this query so it can be added to the FAQ set.`);
+  }
+
+  // Refresh the student's Chat History widget if they're looking at it right now
+  if(currentRole === 'student'){
+    apiRequest('/chatbot/history?limit=10', { headers: authHeaders() }).then(r => {
+      if(r.ok){ chatHistory = r.data; if(currentPage.student === 'dashboard') renderPage(); }
+    });
+  }
+}
+
+/* Detailed feedback modal — star rating + optional comment, POSTs to the
+   real /feedback endpoint (separate from the quick thumbs reactions above). */
+function openFeedbackModal(){
+  openModal('Submit Chatbot Feedback', `
+    <div class="form-grid">
+      <div class="field">
+        <label>How helpful has ${COLLEGE_SHORT} AI been?</label>
+        <div id="starPicker" style="display:flex;gap:6px;font-size:24px;cursor:pointer;">
+          ${[1,2,3,4,5].map(n=>`<span data-star="${n}" onclick="setStarRating(${n})" style="color:var(--slate);">★</span>`).join('')}
+        </div>
+      </div>
+      <div class="field"><label>Comments (optional)</label><input id="fbComment" type="text" placeholder="What worked, or what didn't?"></div>
+    </div>`,
+    `<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitDetailedFeedback()">Submit Feedback</button>`
+  );
+  window._fbStars = 5;
+  setStarRating(5);
+}
+function setStarRating(n){
+  window._fbStars = n;
+  document.querySelectorAll('#starPicker span').forEach(el=>{
+    el.style.color = Number(el.dataset.star) <= n ? 'var(--warn)' : 'var(--slate)';
+  });
+}
+async function submitDetailedFeedback(){
+  const comment = (document.getElementById('fbComment').value||'').trim();
+  const res = await apiRequest('/feedback', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ stars: window._fbStars || 5, comment: comment || null }),
+  });
+  if(!res.ok){ showToast(res.error, 'warn'); return; }
+  closeModal();
+  showToast('Thanks for your feedback!');
+}
+
+/* ---------------- LOGIN BACKGROUND CANVAS (constellation) ---------------- */
+(function initCanvas(){
+  const canvas = document.getElementById('loginCanvas');
+  const ctx = canvas.getContext('2d');
+  let w,h,particles=[];
+  function resize(){
+    w = canvas.width = canvas.offsetWidth;
+    h = canvas.height = canvas.offsetHeight;
+  }
+  function makeParticles(){
+    const count = Math.min(60, Math.floor(w*h/22000));
+    particles = Array.from({length:count}, ()=>({
+      x:Math.random()*w, y:Math.random()*h,
+      vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25,
+      r:Math.random()*1.6+0.6
+    }));
+  }
+  function step(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>w) p.vx*=-1;
+      if(p.y<0||p.y>h) p.vy*=-1;
+    });
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const a=particles[i], b=particles[j];
+        const d = Math.hypot(a.x-b.x, a.y-b.y);
+        if(d<130){
+          ctx.strokeStyle = `rgba(110,161,255,${0.16*(1-d/130)})`;
+          ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    particles.forEach(p=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(157,192,255,0.75)'; ctx.fill();
+    });
+    requestAnimationFrame(step);
+  }
+  window.addEventListener('resize', ()=>{resize(); makeParticles();});
+  resize(); makeParticles(); step();
+})();
+
+applyBranding();
+
+</script>
+</body>
+</html>
